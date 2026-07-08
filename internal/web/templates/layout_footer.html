@@ -1,0 +1,59 @@
+{{define "layout_footer"}}
+  <footer class="site-footer" aria-label="РќР°РІРёРіР°С†РёСЏ Рё СЃРѕС† СЃРµС‚Рё">
+    <div class="site-footer-inner">
+      <div class="site-footer-brand-block">
+        <p class="site-footer-brand">{{.Profile.ShortName}} 2026</p>
+        <div class="site-footer-creator">
+          <p class="site-footer-creator-label">Created by</p>
+          {{if .Profile.OrganizerURL}}<a class="site-footer-creator-link" href="{{.Profile.OrganizerURL}}" target="_blank" rel="noopener noreferrer">{{.Profile.OrganizerName}}</a>{{else}}<span class="site-footer-creator-link">{{.Profile.OrganizerName}}</span>{{end}}
+          <div class="site-footer-social-icons">
+            <a class="site-footer-social-icon-link" href="{{.Profile.TelegramURL}}" target="_blank" rel="noopener noreferrer" title="Telegram" aria-label="Telegram">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 8V6H20V4H19V3H18V2H16V1H14V0H8V1H6V2H4V3H3V4H2V6H1V8H0V14H1V16H2V18H3V19H4V20H6V21H8V22H14V21H16V20H18V19H19V18H20V16H21V14H22V8H21ZM16 10H15V13H14V17H13V16H12V15H11V14H9V13H10V12H11V11H9V12H8V13H6V12H4V11H6V10H8V9H10V8H13V7H15V6H16V10Z" fill="currentColor"/>
+              </svg>
+            </a>
+            <a class="site-footer-social-icon-link" href="{{.Profile.DiscordURL}}" target="_blank" rel="noopener noreferrer" title="Discord" aria-label="Discord">
+              <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 7V4H20V2H19V1H17V0H14V1H8V0H5V1H3V2H2V4H1V7H0V14H2V15H4V16H6V14H5V13H7V14H8V15H14V14H15V13H17V14H16V16H18V15H20V14H22V7H21ZM8 11H6V10H5V8H6V7H8V8H9V10H8V11ZM17 10H16V11H14V10H13V8H14V7H16V8H17V10Z" fill="currentColor"/>
+              </svg>
+            </a>
+            <a class="site-footer-social-icon-link" href="/news" title="РќРѕРІРѕСЃС‚Рё" aria-label="РќРѕРІРѕСЃС‚Рё">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23 10V13H22V14H21V9H22V10H23Z" fill="currentColor"/>
+                <path d="M2 7H8V22H6V21H5V16H2V15H1V8H2V7Z" fill="currentColor"/>
+                <path d="M20 2V21H19V20H18V19H16V18H14V17H12V16H10V7H12V6H14V5H16V4H18V3H19V2H20Z" fill="currentColor"/>
+              </svg>
+            </a>
+            <a class="site-footer-social-icon-link" href="{{.Profile.SupportURL}}" target="_blank" rel="noopener noreferrer">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 7H9V8H8V11H9V14H8V13H7V12H6V8H7V6H8V5H9V4H15V5H16V6H17V8H18V10H17V11H16V8H15V6H10V7Z" fill="currentColor"/>
+                <path d="M20 6V12H19V13H18V14H16V15H10V12H13V13H17V12H18V11H19V7H18V5H17V4H16V3H15V2H9V3H8V4H7V5H6V7H5V11H4V10H3V7H4V6H5V4H6V3H7V2H8V1H16V2H17V3H18V4H19V6H20Z" fill="currentColor"/>
+                <path d="M21 19V18H20V17H19V16H15V17H9V16H5V17H4V18H3V19H2V22H3V23H21V22H22V19H21ZM20 21H4V19H5V18H8V19H16V18H19V19H20V21Z" fill="currentColor"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="site-footer-contact">
+        <p class="site-footer-heading">Р Р°Р·РґРµР»С‹</p>
+        <nav class="site-footer-links" aria-label="Р Р°Р·РґРµР»С‹ СЃР°Р№С‚Р°">
+          <a class="site-footer-link" href="/about">Рћ С‚СѓСЂРЅРёСЂРµ</a>
+          <a class="site-footer-link" href="/news">РќРѕРІРѕСЃС‚Рё</a>
+          <a class="site-footer-link" href="/guide">РРЅСЃС‚СЂСѓРєС†РёСЏ</a>
+          <a class="site-footer-link" href="/faq">Р§Р°Р’Рѕ</a>
+          <a class="site-footer-link" href="/streamers">Р”Р»СЏ СЃС‚СЂРёРјРµСЂРѕРІ</a>
+        </nav>
+      </div>
+    </div>
+    <p class="site-footer-disclaimer">NOT AN OFFICIAL MINECRAFT SERVICE. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</p>
+  </footer>
+  {{if .CustomNotificationText}}
+  <div class="site-push-toast" id="site-push-toast" role="alert" aria-live="assertive" data-push-title="{{.CustomNotificationTitle}}" data-push-text="{{.CustomNotificationText}}">
+    <div class="site-push-toast-content">
+      {{if .CustomNotificationTitle}}<strong class="site-push-toast-title">{{.CustomNotificationTitle}}</strong>{{end}}
+      <p class="site-push-toast-body">{{.CustomNotificationText}}</p>
+    </div>
+    <button class="site-push-toast-close" type="button" aria-label="Р—Р°РєСЂС‹С‚СЊ" data-push-close>Г—</button>
+  </div>
+  {{end}}
+{{end}}

@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "package": "dev.codex.speedrun.timer.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ClientPlayNetworkHandlerMixin",
+    "CreateWorldScreenMixin",
+    "GameMenuScreenMixin",
+    "InGameHudMixin",
+    "KeyboardInputMixin",
+    "MinecraftClientMixin",
+    "OptionsScreenMixin",
+    "SelectWorldScreenMixin",
+    "TitleScreenMixin",
+    "ToastManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

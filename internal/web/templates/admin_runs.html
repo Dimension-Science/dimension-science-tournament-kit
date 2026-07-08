@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}} - РЈРїСЂР°РІР»РµРЅРёРµ СЂРµРєРѕСЂРґР°РјРё СѓС‡Р°СЃС‚РЅРёРєРѕРІ</title>
+  </head>
+  <body>
+    <main class="container admin-page">
+      <section class="info-hero bracket-hero">
+        <div class="about-title-row">
+          <div>
+            <p class="eyebrow">{{.Profile.ShortName}} Admin</p>
+            <h1>РЈРїСЂР°РІР»РµРЅРёРµ СЂРµРєРѕСЂРґР°РјРё</h1>
+          </div>
+          <div class="admin-panel-tools">
+            <a class="button-secondary about-home-link" href="/admin">Р’ Р°РґРјРёРЅРєСѓ</a>
+            <a class="button-secondary about-home-link" href="/cabinet">Р’ РєР°Р±РёРЅРµС‚</a>
+          </div>
+        </div>
+        <p class="muted">Р’С‹Р±РµСЂРёС‚Рµ СѓС‡Р°СЃС‚РЅРёРєР°, С‡С‚РѕР±С‹ РїСЂРѕСЃРјРѕС‚СЂРµС‚СЊ РІСЃРµ РµРіРѕ СЂРµРєРѕСЂРґС‹ Рё Р°РЅРЅСѓР»РёСЂРѕРІР°С‚СЊ РЅРµР»РµРіРёС‚РёРјРЅС‹Рµ Р·Р°Р±РµРіРё.</p>
+      </section>
+
+      <section class="panel admin-runs-section">
+        <div class="panel-body">
+          <div class="admin-search-wrapper">
+            <input class="text-input search-input" type="text" id="admin-runs-search" placeholder="РџРѕРёСЃРє РїРѕ Twitch Р»РѕРіРёРЅСѓ РёР»Рё Minecraft РЅРёРєСѓ..." autocomplete="off" />
+          </div>
+
+          <div class="admin-runs-players-grid" id="players-grid">
+            {{if .Participants}}
+              {{range .Participants}}
+              <a class="admin-player-card" href="/admin/runs/{{.ID}}" data-player-search="{{.TwitchLogin}} {{.TwitchDisplayName}} {{.MinecraftNick}}">
+                <div class="admin-player-avatar-col">
+                  <img class="admin-player-avatar" src="{{if .AvatarURL}}{{.AvatarURL}}{{else}}/static/avatar-placeholder.svg{{end}}" alt="" />
+                </div>
+                <div class="admin-player-info-col">
+                  <strong class="admin-player-name">{{if .TwitchDisplayName}}{{.TwitchDisplayName}}{{else}}{{.TwitchLogin}}{{end}}</strong>
+                  <span class="admin-player-nick">MC: {{if .MinecraftNick}}{{.MinecraftNick}}{{else}}вЂ”{{end}}</span>
+                </div>
+                <div class="admin-player-time-col">
+                  <span class="time-label">Р›СѓС‡С€РµРµ РІСЂРµРјСЏ</span>
+                  <strong class="time-value">{{if .BestTimeMS}}{{formatDuration .BestTimeMS}}{{else}}РќРµС‚ СЂРµРєРѕСЂРґРѕРІ{{end}}</strong>
+                </div>
+              </a>
+              {{end}}
+            {{else}}
+              <div class="empty-state">
+                <strong>РќРµС‚ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅС‹С… СѓС‡Р°СЃС‚РЅРёРєРѕРІ</strong>
+                <span>РЎРїРёСЃРѕРє whitelist РїСѓСЃС‚.</span>
+              </div>
+            {{end}}
+          </div>
+          <div class="empty-state" id="search-empty-state" hidden>
+            <strong>РќРёРєРѕРіРѕ РЅРµ РЅР°С€Р»Рё</strong>
+            <span>РџРѕРїСЂРѕР±СѓР№С‚Рµ РёР·РјРµРЅРёС‚СЊ РїРѕРёСЃРєРѕРІС‹Р№ Р·Р°РїСЂРѕСЃ.</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    {{template "layout_footer" .}}
+
+    <script src="/static/admin-runs.js?v=admin-runs-v1" defer></script>
+  </body>
+</html>

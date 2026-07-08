@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="TOURNAMENT prize fund">
+  <rect width="1200" height="675" fill="#0d0317"/>
+  <circle cx="940" cy="180" r="160" fill="#6d28d9" opacity=".28"/>
+  <circle cx="1020" cy="475" r="210" fill="#facc15" opacity=".12"/>
+  <text x="86" y="130" fill="#ffe55a" font-family="Arial, sans-serif" font-size="32" font-weight="800">DIMENSION TOURNAMENT RUN</text>
+  <text x="86" y="288" fill="#ffffff" font-family="Arial, sans-serif" font-size="88" font-weight="900">РџР РР—РћР’РћР™ Р¤РћРќР”</text>
+  <text x="86" y="400" fill="#ffe55a" font-family="Arial, sans-serif" font-size="116" font-weight="900">5000 в‚Ѕ</text>
+  <text x="92" y="492" fill="#d9cdef" font-family="Arial, sans-serif" font-size="34">Minecraft speedrun С‚СѓСЂРЅРёСЂ РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ</text>
+  <text x="92" y="560" fill="#ffffff" font-family="Arial, sans-serif" font-size="30">example.com</text>
+</svg>

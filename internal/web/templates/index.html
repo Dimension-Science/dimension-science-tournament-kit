@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}}</title>
+  </head>
+  <body class="intro-active">
+    <div class="site-intro" data-site-intro role="button" tabindex="0" aria-label="Click to enter {{.Profile.SiteName}}">
+      <canvas class="intro-canvas" data-intro-canvas aria-hidden="true"></canvas>
+      <div class="intro-ready">
+        <div class="intro-status">{{.Profile.ShortName}} READY</div>
+        <div class="intro-line" aria-hidden="true"></div>
+        <div class="intro-prompt">(CLICK TO START)</div>
+      </div>
+    </div>
+
+    <div class="home-top-actions">
+      <a class="notifications-toggle" href="/notifications" aria-label="РЈРІРµРґРѕРјР»РµРЅРёСЏ" data-tooltip="РЈРІРµРґРѕРјР»РµРЅРёСЏ">
+        <span class="portal-particles" aria-hidden="true">
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+        </span>
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" style="fill: currentColor; vertical-align: middle;">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+        </svg>
+      </a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="РЎРјРµРЅРёС‚СЊ С‚РµРјСѓ" data-tooltip="РЎРјРµРЅРёС‚СЊ С‚РµРјСѓ" aria-pressed="false">
+        <span class="portal-particles" aria-hidden="true">
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+        </span>
+        <img class="theme-toggle-icon theme-toggle-nether-icon" src="/static/theme-nether.png" alt="" />
+        <img class="theme-toggle-icon theme-toggle-quartz-icon" src="/static/theme-quartz.png" alt="" />
+      </button>
+      <a class="home-account-card {{if .AccountCard.Authenticated}}is-authenticated{{end}}" href="{{.AccountCard.Href}}" aria-label="{{.AccountCard.Label}}">
+        <span class="portal-particles" aria-hidden="true">
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+        </span>
+        {{if .AccountCard.Authenticated}}
+        <img class="home-account-avatar" src="{{.AccountCard.AvatarURL}}" alt="" />
+        <span class="home-account-copy">
+          <small>{{.AccountCard.DisplayName}}</small>
+          <strong>{{.AccountCard.Label}}</strong>
+        </span>
+        {{else}}
+        <span class="home-account-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 12.25a4.25 4.25 0 1 0 0-8.5 4.25 4.25 0 0 0 0 8.5Zm0 1.75c-3.02 0-7 1.52-7 4.5V20h14v-1.5c0-2.98-3.98-4.5-7-4.5Z" />
+          </svg>
+        </span>
+        <span class="home-account-copy">
+          <strong>{{.AccountCard.Label}}</strong>
+        </span>
+        {{end}}
+      </a>
+    </div>
+    <div class="achievement-feed-toasts" data-achievement-feed aria-live="polite" aria-atomic="false"></div>
+
+    <main class="container">
+      <section class="hero">
+        <div class="hero-stack">
+          <img class="brand-logo" src="/static/tournament-logo.svg?v=head-logo-v1" alt="{{.Profile.SiteName}} logo" />
+          <p class="minecraft-splash" data-minecraft-splash>Р”СЂР°РєРѕРЅ СЃРЅРѕРІР° РЅРµ РІ Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё.</p>
+        </div>
+      </section>
+
+      <section class="tournament-stage-strip {{if and .Tournament.RegistrationOpen (not .ApplicationsClosed)}}is-registration{{else if not .Tournament.ShowCountdown}}is-static{{end}}">
+        {{if and .Tournament.RegistrationOpen (not .ApplicationsClosed)}}
+        <div class="tournament-stage-copy">
+          <p class="eyebrow">Р РµРіРёСЃС‚СЂР°С†РёСЏ РѕС‚РєСЂС‹С‚Р°</p>
+          <h2>РџСЂРѕРґР»РёС‚СЃСЏ РґРѕ 5 РёСЋРЅСЏ</h2>
+          <p class="muted">РџРѕРґР°Р№С‚Рµ Р·Р°СЏРІРєСѓ Р·Р°СЂР°РЅРµРµ, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ РґРѕСЃС‚СѓРї Рє РєР°Р±РёРЅРµС‚Сѓ, РЅРѕРІРѕСЃС‚СЏРј Рё СЃС‚Р°СЂС‚РѕРІРѕР№ РёРЅСЃС‚СЂСѓРєС†РёРё. Р—Р°Р±РµРіРё РїСЂРѕС…РѕРґСЏС‚ РІ {{.Profile.GameName}} {{.Profile.GameVersion}}.</p>
+        </div>
+        <div class="tournament-stage-actions" aria-label="Р”РµР№СЃС‚РІРёСЏ РґР»СЏ СѓС‡Р°СЃС‚РёСЏ">
+          <a class="button" href="/apply">РџРѕРґР°С‚СЊ Р·Р°СЏРІРєСѓ</a>
+          <a class="button-secondary" href="{{.Profile.SupportURL}}" target="_blank" rel="noopener noreferrer">РџСЂРѕРІРµСЂРёС‚СЊ Р·Р°СЏРІРєСѓ</a>
+          <a class="button-secondary help-icon-button" href="/how-to-participate" aria-label="РљР°Рє СѓС‡Р°СЃС‚РІРѕРІР°С‚СЊ" data-tooltip="РљР°Рє СѓС‡Р°СЃС‚РІРѕРІР°С‚СЊ">?</a>
+        </div>
+        {{else if and .Tournament.RegistrationOpen .ApplicationsClosed}}
+        <div class="tournament-stage-copy">
+          <p class="eyebrow">Р РµРіРёСЃС‚СЂР°С†РёСЏ Р·Р°РєСЂС‹С‚Р°</p>
+          <h2>РџСЂРёРµРј Р·Р°СЏРІРѕРє Р·Р°РІРµСЂС€РµРЅ</h2>
+          <p class="muted">Р’С‹ РјРѕР¶РµС‚Рµ РІРѕР№С‚Рё РІ Р»РёС‡РЅС‹Р№ РєР°Р±РёРЅРµС‚, РµСЃР»Рё РІР°С€Р° Р·Р°СЏРІРєР° Р±С‹Р»Р° РѕРґРѕР±СЂРµРЅР° СЂР°РЅРµРµ.</p>
+        </div>
+        <div class="tournament-stage-actions" aria-label="Р”РµР№СЃС‚РІРёСЏ РґР»СЏ СѓС‡Р°СЃС‚РёСЏ">
+          <a class="button" href="/login">Р’РѕР№С‚Рё РІ РєР°Р±РёРЅРµС‚</a>
+          <a class="button-secondary help-icon-button" href="/how-to-participate" aria-label="РљР°Рє СѓС‡Р°СЃС‚РІРѕРІР°С‚СЊ" data-tooltip="РљР°Рє СѓС‡Р°СЃС‚РІРѕРІР°С‚СЊ">?</a>
+        </div>
+        {{else}}
+        <div class="tournament-stage-copy">
+          <p class="eyebrow">Р­С‚Р°Рї С‚СѓСЂРЅРёСЂР°</p>
+          <h2>{{.Tournament.PhaseLabel}}</h2>
+        </div>
+        {{if .Tournament.ShowCountdown}}
+        <div class="tournament-countdown" aria-label="РћСЃС‚Р°Р»РѕСЃСЊ {{.Tournament.CountdownValue}} {{.Tournament.CountdownLabel}}">
+          <span class="tournament-countdown-prefix">РћСЃС‚Р°Р»РѕСЃСЊ</span>
+          <span class="tournament-countdown-main">
+            <span class="tournament-countdown-number">{{.Tournament.CountdownValue}}</span>
+            <span class="tournament-countdown-label">{{.Tournament.CountdownLabel}}</span>
+          </span>
+        </div>
+        {{end}}
+        {{end}}
+      </section>
+
+      {{if .Tournament.BracketReady}}
+      <div class="tabs-nav">
+        <div class="tabs-nav-left">
+          <button class="button tab-button active" type="button" onclick="switchTab('bracket')">РЎРµС‚РєР°</button>
+          <button class="button-secondary tab-button" type="button" onclick="switchTab('leaderboard')">РўР°Р±Р»РёС†Р° Р»РёРґРµСЂРѕРІ</button>
+        </div>
+        <div class="tabs-nav-right">
+          <a href="/pickems" class="button pickems-attention-button">РџРёРєРµРјС‹</a>
+        </div>
+      </div>
+      {{end}}
+
+      <div id="tab-content-bracket" class="tab-content" {{if not .Tournament.BracketReady}}hidden{{end}}>
+        {{if .Rounds}}
+        <section class="bracket-board home-bracket-board" style="margin-bottom: 32px;">
+          {{range .Rounds}}
+          <div class="bracket-round">
+            <h2>{{.Label}}</h2>
+            <div class="bracket-match-list">
+              {{range .Matches}}
+              <article class="bracket-match {{if eq .Status "running"}}is-live{{end}}">
+                <div class="bracket-match-topline">
+                  <span>{{.StatusLabel}}</span>
+                  <small>BO{{.BestOf}} В· {{formatShortDateTime .StartsAt}}</small>
+                </div>
+                <div class="bracket-player {{if and .WinnerName (eq .WinnerName .Player1Name)}}is-winner{{end}}">
+                  <span><small>{{.Player1Seed}}</small>{{.Player1Name}}</span>
+                  <strong>{{if .Player1BestTime}}{{formatDuration .Player1BestTime}}{{else}}-{{end}}</strong>
+                </div>
+                <div class="bracket-player {{if and .WinnerName (eq .WinnerName .Player2Name)}}is-winner{{end}}">
+                  <span><small>{{.Player2Seed}}</small>{{.Player2Name}}</span>
+                  <strong>{{if .Player2BestTime}}{{formatDuration .Player2BestTime}}{{else}}-{{end}}</strong>
+                </div>
+                {{if .WinnerName}}
+                <p class="bracket-winner">РџРѕР±РµР¶РґР°РµС‚: {{.WinnerName}}</p>
+                {{end}}
+              </article>
+              {{end}}
+            </div>
+          </div>
+          {{end}}
+        </section>
+        {{end}}
+      </div>
+
+      <div id="tab-content-leaderboard" class="tab-content" {{if .Tournament.BracketReady}}hidden{{end}}>
+        <section class="panel leaderboard-panel" id="leaderboard">
+          <div class="panel-body">
+            <div class="title-row leaderboard-toolbar">
+              <div>
+                <h2>РўР°Р±Р»РёС†Р° Р»РёРґРµСЂРѕРІ</h2>
+                <p class="muted">РљР»РёРє РїРѕ СЃС‚СЂРѕРєРµ РѕС‚РєСЂРѕРµС‚ СЃРїР»РёС‚С‹ Рё СЃСЂР°РІРЅРµРЅРёРµ СЃ #1.</p>
+              </div>
+              <label class="leaderboard-search">
+                <span>РџРѕРёСЃРє СѓС‡Р°СЃС‚РЅРёРєРѕРІ</span>
+                <input type="search" placeholder="РќРёРє РёРіСЂРѕРєР°" autocomplete="off" data-leaderboard-search />
+              </label>
+            </div>
+
+            <div class="table-wrap">
+              <table class="leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>РЈС‡Р°СЃС‚РЅРёРє</th>
+                    <th>Р›СѓС‡С€РµРµ РІСЂРµРјСЏ</th>
+                    <th>Р’РµСЂСЃРёСЏ</th>
+                    <th>Р”Р°С‚Р°</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{if .Leaderboard}}
+                  {{range .Leaderboard}}
+                  <tr class="leaderboard-row {{.RankMotionClass}}" data-leaderboard-row data-leaderboard-target="{{.DetailID}}" data-player-search="{{.DisplayName}} {{.TwitchLogin}} {{.MinecraftNick}}" role="button" tabindex="0" aria-expanded="false" title="РћС‚РєСЂС‹С‚СЊ СЃРїР»РёС‚С‹">
+                    <td>
+                      <div class="rank-cell">
+                        <span class="rank-badge rank-{{.Rank}}">{{.Rank}}</span>
+                        {{if .RankDeltaLabel}}
+                        <span class="rank-change {{.RankDeltaClass}}" title="РР·РјРµРЅРµРЅРёРµ РїРѕР·РёС†РёРё">{{.RankDeltaLabel}}</span>
+                        {{end}}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="runner-cell">
+                        <span class="portal-particles leaderboard-row-particles" aria-hidden="true">
+                          <i></i>
+                          <i></i>
+                          <i></i>
+                          <i></i>
+                          <i></i>
+                        </span>
+                        <img class="runner-avatar" src="{{if .AvatarURL}}{{.AvatarURL}}{{else}}/static/avatar-placeholder.svg{{end}}" alt="" />
+                        <div class="runner-copy">
+                          <button class="leaderboard-name" type="button" data-leaderboard-toggle="{{.DetailID}}" aria-expanded="false">
+                            {{.DisplayName}}
+                          </button>
+                          <div class="leaderboard-subtle">{{if .MinecraftNick}}{{.MinecraftNick}}{{else}}@{{.TwitchLogin}}{{end}}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="time-cell">{{formatDuration .BestTimeMS}}</td>
+                    <td>{{.Version}}</td>
+                    <td>{{.DateLabel}}</td>
+                  </tr>
+                  <tr id="{{.DetailID}}" class="leaderboard-detail-row" hidden>
+                    <td colspan="5">
+                      <div class="leaderboard-detail-card">
+                        {{if .HasSplitDetails}}
+                        <table class="sector-table">
+                          <thead>
+                            <tr>
+                              <th>Р­С‚Р°Рї</th>
+                              <th>РЎРµРєС‚РѕСЂ</th>
+                              <th>РћР±С‰РµРµ РІСЂРµРјСЏ</th>
+                              <th>РЎСЂР°РІРЅРµРЅРёРµ СЃ #1</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {{range .Milestones}}
+                            <tr>
+                              <td>{{.Label}}</td>
+                              <td>{{if .SectorMS}}{{formatDuration .SectorMS}}{{else}}-{{end}}</td>
+                              <td>{{if .CumulativeMS}}{{formatDuration .CumulativeMS}}{{else}}-{{end}}</td>
+                              <td>
+                                <span class="split-comparison {{.ComparisonClass}}">
+                                  {{if .ComparisonIcon}}<span class="split-comparison-icon" aria-hidden="true">{{.ComparisonIcon}}</span>{{end}}
+                                  <span>{{.ComparisonLabel}}</span>
+                                </span>
+                              </td>
+                            </tr>
+                            {{end}}
+                          </tbody>
+                        </table>
+                        {{else}}
+                        <div class="empty-state empty-state-inline">
+                          <strong>РЎРїР»РёС‚С‹ РїРѕРєР° РЅРµ Р·Р°РїРёСЃР°РЅС‹</strong>
+                          <span>{{.MissingReason}} РЎР»РµРґСѓСЋС‰РёР№ РІР°Р»РёРґРЅС‹Р№ Р·Р°Р±РµРі РІ {{.Profile.GameName}} {{.Profile.GameVersion}} СЃ Р°РєС‚СѓР°Р»СЊРЅС‹Рј РјРѕРґРѕРј РїРѕРєР°Р¶РµС‚ СЌС‚Р°РїС‹ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ Р·РґРµСЃСЊ.</span>
+                        </div>
+                        {{end}}
+                      </div>
+                    </td>
+                  </tr>
+                  {{if .AfterCut}}
+                  <tr class="leaderboard-cut-row">
+                    <td colspan="5">РўРѕРї-{{$.Tournament.PlayoffSlots}} РїСЂРѕС…РѕРґРёС‚ РІ РїР»РµР№-РѕС„С„</td>
+                  </tr>
+                  {{end}}
+                  {{end}}
+                  {{else}}
+                  <tr>
+                    <td colspan="5" class="table-empty-cell">
+                      <div class="empty-state">
+                        <strong>РўР°Р±Р»РёС†Р° Р¶РґРµС‚ РїРµСЂРІС‹Р№ СЂРµР·СѓР»СЊС‚Р°С‚</strong>
+                        <span>Р—Р°Р±РµРі РІ {{.Profile.GameName}} {{.Profile.GameVersion}} РїРѕСЏРІРёС‚СЃСЏ Р·РґРµСЃСЊ РїРѕСЃР»Рµ СѓР±РёР№СЃС‚РІР° РґСЂР°РєРѕРЅР°, Р°РєС‚РёРІРЅРѕР№ Minecraft-С‚СЂР°РЅСЃР»СЏС†РёРё Рё РїСЂРѕРІРµСЂРєРё РјРѕРґРѕРј.</span>
+                        <a class="site-footer-link" href="/guide">РљР°Рє РѕС‚РїСЂР°РІРёС‚СЊ Р·Р°Р±РµРі</a>
+                      </div>
+                    </td>
+                  </tr>
+                  {{end}}
+                </tbody>
+              </table>
+            </div>
+            <div class="empty-state empty-state-compact leaderboard-empty" data-leaderboard-empty hidden>
+              <strong>РќРёРєРѕРіРѕ РЅРµ РЅР°С€Р»Рё</strong>
+              <span>РџСЂРѕРІРµСЂСЊ РЅРёРє РёР»Рё Twitch-login СѓС‡Р°СЃС‚РЅРёРєР°.</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel now-playing-panel" id="now-playing">
+        <div class="panel-body">
+          <div class="title-row now-playing-title">
+            <div>
+              <h2>РЎРµР№С‡Р°СЃ РёРіСЂР°СЋС‚:</h2>
+            </div>
+          </div>
+
+          {{if .NowPlaying}}
+          <div class="now-playing-grid">
+            {{range .NowPlaying}}
+            <a class="now-playing-card is-live" href="{{.TwitchURL}}" target="_blank" rel="noopener noreferrer" aria-label="РћС‚РєСЂС‹С‚СЊ Twitch РєР°РЅР°Р» {{.DisplayName}}">
+              <div class="now-playing-avatar-wrap">
+                <img class="now-playing-avatar" src="{{.AvatarURL}}" alt="" />
+                <span class="now-playing-status">{{.StatusLabel}}</span>
+              </div>
+              <div class="now-playing-copy">
+                <h3>{{.DisplayName}}</h3>
+                <p class="now-playing-category">{{.Category}}</p>
+                <p class="now-playing-stream-title">{{.StreamTitle}}</p>
+                <span class="now-playing-watch portal-button">
+                  <span class="portal-particles" aria-hidden="true">
+                    <i></i>
+                    <i></i>
+                    <i></i>
+                    <i></i>
+                    <i></i>
+                  </span>
+                  <span class="portal-button-label">РЎРјРѕС‚СЂРµС‚СЊ</span>
+                </span>
+              </div>
+            </a>
+            {{end}}
+          </div>
+          {{else}}
+          <div class="empty-state now-playing-empty">
+            <strong>РЎРµР№С‡Р°СЃ РЅРёРєС‚Рѕ РЅРµ РІ Р·Р°Р±РµРіРµ</strong>
+            <span>РљРѕРіРґР° СѓС‡Р°СЃС‚РЅРёРє РІРєР»СЋС‡РёС‚ РїРѕРєР°Р· Рё Р·Р°РїСѓСЃС‚РёС‚ Minecraft-СЃС‚СЂРёРј, РєР°СЂС‚РѕС‡РєР° РїРѕСЏРІРёС‚СЃСЏ Р·РґРµСЃСЊ.</span>
+            <a class="site-footer-link" href="/guide">РџСЂР°РІРёР»Р° СѓС‡Р°СЃС‚РёСЏ</a>
+          </div>
+          {{end}}
+        </div>
+      </section>
+    </main>
+    {{template "layout_footer" .}}
+    <script>
+      function switchTab(tabId) {
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.classList.remove('active', 'button');
+          btn.classList.add('button-secondary');
+        });
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.setAttribute('hidden', '');
+        });
+        
+        const activeBtn = event ? event.currentTarget : document.querySelector(`[onclick="switchTab('${tabId}')"]`);
+        if (activeBtn) {
+          activeBtn.classList.remove('button-secondary');
+          activeBtn.classList.add('active', 'button');
+        }
+        
+        const activeContent = document.getElementById(`tab-content-${tabId}`);
+        if (activeContent) activeContent.removeAttribute('hidden');
+      }
+    </script>
+    <script src="/static/leaderboard.js?v=achievement-icons-v1"></script>
+  </body>
+</html>

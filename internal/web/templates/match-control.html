@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}} - РЎС‚Р°СЂС‚ РјР°С‚С‡РµР№</title>
+  </head>
+  <body>
+    <main class="container match-control-page">
+      <section class="info-hero bracket-hero">
+        <div class="about-title-row">
+          <div>
+            <p class="eyebrow">Admin</p>
+            <h1>РЎС‚Р°СЂС‚ РјР°С‚С‡РµР№</h1>
+          </div>
+          <a class="button-secondary about-home-link" href="/cabinet">Р’РµСЂРЅСѓС‚СЊСЃСЏ РІ РєР°Р±РёРЅРµС‚</a>
+        </div>
+      </section>
+
+      <section class="panel match-control-status">
+        <div class="panel-body">
+          <p class="eyebrow">РЎРµС‚РєР° РїР»РµР№-РѕС„С„</p>
+          <h2 data-control-title>Р—Р°РіСЂСѓР·РєР°...</h2>
+          <p class="muted" data-control-message>РџСЂРѕРІРµСЂСЏСЋ С‚СѓСЂРЅРёСЂ Рё РјР°С‚С‡Рё.</p>
+        </div>
+      </section>
+
+      <section class="match-control-layout">
+        <aside class="match-control-days" aria-label="Р”РЅРё РјР°С‚С‡РµР№" data-match-days></aside>
+        <div class="match-control-list" data-match-list></div>
+      </section>
+    </main>
+    <p class="site-footer-disclaimer">NOT AN OFFICIAL MINECRAFT SERVICE. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</p>
+
+    <script src="/static/match-control.js?v=match-control-v3" defer></script>
+  </body>
+</html>

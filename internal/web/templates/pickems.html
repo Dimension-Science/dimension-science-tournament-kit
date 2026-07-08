@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}} - Pickems</title>
+  </head>
+  <body>
+    <main class="container">
+      <section class="info-hero bracket-hero">
+        <div class="about-title-row">
+          <div>
+            <p class="eyebrow">{{.Profile.ShortName}}</p>
+            <h1>РџСЂРѕРіРЅРѕР·С‹ (РџРёРєРµРјС‹)</h1>
+          </div>
+          <a class="button-secondary about-home-link" href="/">РќР° РіР»Р°РІРЅСѓСЋ</a>
+        </div>
+      </section>
+
+      {{if not .Tournament.BracketOpen}}
+      <section class="panel">
+        <div class="panel-body empty-state">
+          <h2>РџСЂРѕРіРЅРѕР·С‹ РѕС‚РєСЂРѕСЋС‚СЃСЏ РїРѕСЃР»Рµ РєРІР°Р»РёС„РёРєР°С†РёРё</h2>
+          <p class="muted">РљР°Рє С‚РѕР»СЊРєРѕ РѕРїСЂРµРґРµР»РёС‚СЃСЏ С‚РѕРї-8 РёРіСЂРѕРєРѕРІ Рё СЃРѕР±РµСЂРµС‚СЃСЏ С‚СѓСЂРЅРёСЂРЅР°СЏ СЃРµС‚РєР°, Р·РґРµСЃСЊ РїРѕСЏРІРёС‚СЃСЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РІС‹Р±СЂР°С‚СЊ СЃРІРѕРёС… РїРѕР±РµРґРёС‚РµР»РµР№.</p>
+          <a class="button" href="/bracket">РћС‚РєСЂС‹С‚СЊ СЃРµС‚РєСѓ</a>
+        </div>
+      </section>
+      {{else}}
+      <!-- РЎРµС‚РєР° РїСЂРѕРіРЅРѕР·РѕРІ РїР»РµР№-РѕС„С„ (Full width) -->
+      <h2 class="pickems-section-title">РЎРµС‚РєР° РїСЂРѕРіРЅРѕР·РѕРІ РїР»РµР№-РѕС„С„</h2>
+      <section class="bracket-board pickem-bracket-board">
+        {{range .Rounds}}
+          {{if ne .Key "third_place"}}
+          <div class="bracket-round" data-round="{{.Key}}">
+            <h2>{{.Label}}</h2>
+            <div class="bracket-match-list">
+              {{range .Matches}}
+              <article class="bracket-match {{if eq .Status "running"}}is-live{{end}}" 
+                       data-match-id="{{.ID}}" 
+                       data-round="{{.Round}}" 
+                       data-position="{{.Position}}"
+                       data-status="{{.Status}}">
+                <div class="bracket-match-topline">
+                  <span class="pickem-status {{if eq .Status "scheduled"}}upcoming{{else if eq .Status "running"}}live{{else}}finished{{end}}">
+                    {{if eq .Status "scheduled"}}РџСЂРµРґСЃС‚РѕРёС‚{{else if eq .Status "running"}}LIVE{{else}}Р—Р°РІРµСЂС€РµРЅ{{end}}
+                  </span>
+                  <small>BO{{.BestOf}}</small>
+                </div>
+                
+                <!-- Player 1 Slot -->
+                <button type="button" class="bracket-player pickem-option" 
+                        data-player-slot="1"
+                        data-player-id="{{.Player1ID}}"
+                        data-player-seed="{{.Player1Seed}}"
+                        data-player-name="{{.Player1Name}}"
+                        {{if not $.IsLoggedIn}}disabled onclick="location.href='/api/auth/twitch/start'"{{else if or (eq .Status "running") (eq .Status "finished")}}disabled{{end}}>
+                  <span class="pickem-option-name-wrapper">
+                    <small class="pickem-option-seed">{{if .Player1Seed}}{{.Player1Seed}}{{end}}</small>
+                    <span class="pickem-option-name">{{if .Player1Name}}{{.Player1Name}}{{else}}РћР¶РёРґР°РµС‚СЃСЏ РІС‹Р±РѕСЂ{{end}}</span>
+                  </span>
+                  <span class="pickem-option-vote-indicator"></span>
+                </button>
+
+                <!-- Player 2 Slot -->
+                <button type="button" class="bracket-player pickem-option" 
+                        data-player-slot="2"
+                        data-player-id="{{.Player2ID}}"
+                        data-player-seed="{{.Player2Seed}}"
+                        data-player-name="{{.Player2Name}}"
+                        {{if not $.IsLoggedIn}}disabled onclick="location.href='/api/auth/twitch/start'"{{else if or (eq .Status "running") (eq .Status "finished")}}disabled{{end}}>
+                  <span class="pickem-option-name-wrapper">
+                    <small class="pickem-option-seed">{{if .Player2Seed}}{{.Player2Seed}}{{end}}</small>
+                    <span class="pickem-option-name">{{if .Player2Name}}{{.Player2Name}}{{else}}РћР¶РёРґР°РµС‚СЃСЏ РІС‹Р±РѕСЂ{{end}}</span>
+                  </span>
+                  <span class="pickem-option-vote-indicator"></span>
+                </button>
+                
+                {{$stats := index $.MatchStats .ID}}
+                <div class="pickem-stats-bar">
+                  <div class="pickem-stats-fill-p1" style="width: {{$stats.Player1Percent}}%;"></div>
+                  <div class="pickem-stats-fill-p2" style="width: {{$stats.Player2Percent}}%;"></div>
+                </div>
+                <div class="pickem-stats-labels">
+                  <span data-stat-p1>{{$stats.Player1Percent}}% ({{$stats.Player1Votes}} РіРѕР»РѕСЃРѕРІ)</span>
+                  <span data-stat-p2>{{$stats.Player2Percent}}% ({{$stats.Player2Votes}} РіРѕР»РѕСЃРѕРІ)</span>
+                </div>
+              </article>
+              {{end}}
+            </div>
+          </div>
+          {{end}}
+        {{end}}
+      </section>
+      {{if .IsLoggedIn}}
+      <div class="pickems-submit-bar" data-pickems-submit-bar>
+        {{if .PickemsSubmitted}}
+        <strong>РџСЂРѕРіРЅРѕР· РїРѕРґС‚РІРµСЂР¶РґРµРЅ</strong>
+        <span>Р’С‹Р±РѕСЂ Р·Р°С„РёРєСЃРёСЂРѕРІР°РЅ Рё Р±РѕР»СЊС€Рµ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РёР·РјРµРЅРµРЅ.</span>
+        {{else}}
+        <div>
+          <strong>Р—Р°РїРѕР»РЅРёС‚Рµ РІСЃСЋ СЃРµС‚РєСѓ</strong>
+          <span data-pickems-progress>Р’С‹Р±СЂР°РЅРѕ 0 РёР· 7 РјР°С‚С‡РµР№</span>
+        </div>
+        <button class="button" type="button" data-pickems-submit disabled>РџРѕРґС‚РІРµСЂРґРёС‚СЊ РїСЂРѕРіРЅРѕР·</button>
+        {{end}}
+      </div>
+      {{end}}
+      {{end}}
+
+      <!-- РџСЂРѕС„РёР»СЊ + Р›РёРґРµСЂР±РѕСЂРґ -->
+      <div class="pickems-bottom-row">
+        <!-- Р›РµРІР°СЏ РєРѕР»РѕРЅРєР°: РџСЂРѕС„РёР»СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ -->
+        <section class="pickems-sidebar-section">
+            <div class="pickems-section-body">
+              {{if .IsLoggedIn}}
+              <div class="pickem-user-card-header">
+                <div>
+                  <p class="eyebrow" style="margin: 0;">РђРІС‚РѕСЂРёР·РѕРІР°РЅ РєР°Рє</p>
+                  <h3 style="margin: 4px 0 0 0;">@{{.User.TwitchLogin}}</h3>
+                </div>
+                <form action="/auth/logout" method="post">
+                  <button type="submit" class="button-secondary" style="padding: 6px 12px; height: auto; min-height: unset; font-size: 0.9em;">Р’С‹Р№С‚Рё</button>
+                </form>
+              </div>
+              <div class="pickem-user-stats">
+                <div>
+                  <div class="pickem-stat-val">{{.UserScore}}</div>
+                  <div class="pickem-stat-lbl">РћС‡РєРё</div>
+                </div>
+                <div>
+                  <div class="pickem-stat-val total">{{.UserCorrectGuesses}}</div>
+                  <div class="pickem-stat-lbl">РњР°С‚С‡Рё</div>
+                </div>
+              </div>
+              {{else}}
+              <p class="eyebrow">Р“РѕР»РѕСЃРѕРІР°РЅРёРµ</p>
+              <h3>РЎРґРµР»Р°Р№ СЃРІРѕР№ РїСЂРѕРіРЅРѕР·!</h3>
+              <p class="muted" style="font-size: 0.9em; margin-bottom: var(--space-4);">Р’РѕР№РґРёС‚Рµ С‡РµСЂРµР· Twitch, С‡С‚РѕР±С‹ СЃРѕС…СЂР°РЅСЏС‚СЊ СЃРІРѕРё РїСЂРѕРіРЅРѕР·С‹ РЅР° РјР°С‚С‡Рё Рё СЃРѕСЂРµРІРЅРѕРІР°С‚СЊСЃСЏ РІ С‚Р°Р±Р»РёС†Рµ Р»РёРґРµСЂРѕРІ.</p>
+              <a href="/api/auth/twitch/start" class="button" style="width: 100%; text-align: center;">Р’РѕР№С‚Рё С‡РµСЂРµР· Twitch</a>
+              
+              {{if .AllowDevMockAuth}}
+              <form method="post" action="/auth/twitch/mock" style="margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2);">
+                <input class="text-input" type="text" name="twitch_login" placeholder="Twitch login (dev)" required style="width: 100%;" />
+                <button class="button-secondary" type="submit" style="width: 100%;">Р’РѕР№С‚Рё РєР°Рє Mock-Р·СЂРёС‚РµР»СЊ</button>
+              </form>
+              {{end}}
+              {{end}}
+            </div>
+        </section>
+
+        <!-- РџСЂР°РІР°СЏ РєРѕР»РѕРЅРєР°: РўР°Р±Р»РёС†Р° Р»РёРґРµСЂРѕРІ РїСЂРѕРіРЅРѕР·РѕРІ -->
+        <section class="pickems-leaderboard-section">
+            <div class="pickems-section-body">
+              <p class="eyebrow" style="margin-bottom: var(--space-3);">РўР°Р±Р»РёС†Р° Р»РёРґРµСЂРѕРІ РїСЂРѕРіРЅРѕР·РѕРІ</p>
+              {{if not .Leaderboard}}
+              <p class="muted" style="font-size: 0.9em; text-align: center; padding: 24px 0;">РџСЂРѕРіРЅРѕР·РѕРІ РµС‰С‘ РЅРµС‚. Р‘СѓРґСЊС‚Рµ РїРµСЂРІС‹РјРё!</p>
+              {{else}}
+              <div class="table-wrap">
+              <table class="leaderboard-table pickems-leaderboard-table">
+                <thead>
+                  <tr>
+                    <th class="rank">#</th>
+                    <th class="username">РЎС‚СЂРёРјРµСЂ</th>
+                    <th style="text-align: right;">РћС‡РєРё</th>
+                    <th style="text-align: right;">РњР°С‚С‡Рё</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{range $idx, $row := .Leaderboard}}
+                  <tr>
+                    <td class="rank">{{add $idx 1}}</td>
+                    <td class="username">@{{$row.TwitchLogin}}</td>
+                    <td class="score">{{$row.TotalPoints}}</td>
+                    <td class="correct">{{$row.CorrectGuesses}}</td>
+                  </tr>
+                  {{end}}
+                </tbody>
+              </table>
+              </div>
+              {{end}}
+            </div>
+        </section>
+      </div>
+    </main>
+
+    {{template "layout_footer" .}}
+    <script>
+      window.TOURNAMENT_PREDICTIONS = {
+        {{range $matchID, $winnerID := .UserPredictions}}
+          "{{$matchID}}": "{{$winnerID}}",
+        {{end}}
+      };
+      window.IS_LOGGED_IN = {{.IsLoggedIn}};
+      window.TOURNAMENT_PICKEMS_SUBMITTED = {{.PickemsSubmitted}};
+    </script>
+    <script src="/static/pickems.js?v=pickems-submit-v1" defer></script>
+  </body>
+</html>

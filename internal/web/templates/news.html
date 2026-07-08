@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>РќРѕРІРѕСЃС‚Рё - {{.Profile.ShortName}}</title>
+    <script src="/static/news.js?v=news-order-v1" defer></script>
+  </head>
+  <body>
+    <main class="info-page news-page">
+      <section class="about-hero news-hero">
+        <p class="eyebrow">{{.Profile.SiteName}}</p>
+        <div class="about-title-row">
+          <div>
+            <h1>РќРѕРІРѕСЃС‚Рё</h1>
+            <p class="muted">РџСѓР±Р»РёРєР°С†РёРё РёР· Telegram-РєР°РЅР°Р»Р° {{.Profile.ShortName}}. РўРµРєСЃС‚ Рё РёР·РѕР±СЂР°Р¶РµРЅРёРµ СЃРѕС…СЂР°РЅСЏСЋС‚СЃСЏ РЅР° СЃР°Р№С‚Рµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё.</p>
+          </div>
+          <div class="about-actions">
+            <a class="button-secondary about-home-link" href="/">РќР° РіР»Р°РІРЅСѓСЋ</a>
+            <a class="button-secondary about-home-link" href="{{.Profile.TelegramURL}}" target="_blank" rel="noopener noreferrer">Telegram</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="news-feed" aria-label="РќРѕРІРѕСЃС‚Рё С‚СѓСЂРЅРёСЂР°">
+        {{if .Posts}}
+          {{range .Posts}}
+          <article class="news-post">
+            <div class="news-post-media">
+              {{if .ImageURL}}
+              <img class="news-post-image" src="{{.ImageURL}}" alt="" loading="lazy" />
+              {{else}}
+              <div class="news-post-image-placeholder" aria-hidden="true">{{.Profile.ShortName}}</div>
+              {{end}}
+            </div>
+            <div class="news-post-body">
+              <div class="news-post-meta">
+                <time class="news-post-date" datetime="{{.PublishedAt.Format "2006-01-02T15:04:05Z07:00"}}">{{.DateText}}</time>
+                <span class="news-post-time">{{.TimeText}}</span>
+              </div>
+              <h2 class="news-post-title">{{.Title}}</h2>
+              {{if .BodyHTML}}
+              <p class="news-post-text">{{.BodyHTML}}</p>
+              {{end}}
+              {{if .SourceURL}}
+              <a class="news-post-source" href="{{.SourceURL}}" target="_blank" rel="noopener noreferrer">РћС‚РєСЂС‹С‚СЊ РІ Telegram</a>
+              {{end}}
+            </div>
+          </article>
+          {{end}}
+        {{else}}
+          <div class="news-empty">
+            <strong>РќРѕРІРѕСЃС‚РµР№ РїРѕРєР° РЅРµС‚</strong>
+            <span>РљРѕРіРґР° РІ Telegram-РєР°РЅР°Р»Рµ РїРѕСЏРІРёС‚СЃСЏ РЅРѕРІС‹Р№ РїРѕСЃС‚, РѕРЅ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїРѕСЏРІРёС‚СЃСЏ Р·РґРµСЃСЊ.</span>
+          </div>
+        {{end}}
+      </section>
+    </main>
+
+    {{template "layout_footer" .}}
+  </body>
+</html>

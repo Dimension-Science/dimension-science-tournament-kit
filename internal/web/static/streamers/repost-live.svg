@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Tournament live">
+  <rect width="1200" height="675" fill="#12051f"/>
+  <path d="M0 0h1200v675H0z" fill="url(#g)"/>
+  <defs>
+    <linearGradient id="g" x1="120" y1="80" x2="1040" y2="610" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3b1672"/>
+      <stop offset=".52" stop-color="#140820"/>
+      <stop offset="1" stop-color="#0a0312"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="#8b5cf6" stroke-opacity=".26">
+    <path d="M80 88h1040v499H80z"/>
+    <path d="M80 180h1040M80 272h1040M80 364h1040M80 456h1040M250 88v499M420 88v499M590 88v499M760 88v499M930 88v499"/>
+  </g>
+  <text x="88" y="128" fill="#ffe55a" font-family="Arial, sans-serif" font-size="28" font-weight="700">LIVE SPEEDRUN</text>
+  <text x="88" y="278" fill="#ffffff" font-family="Arial, sans-serif" font-size="86" font-weight="900">DIMENSION</text>
+  <text x="88" y="366" fill="#ffffff" font-family="Arial, sans-serif" font-size="86" font-weight="900">TOURNAMENT RUN</text>
+  <text x="92" y="438" fill="#d9cdef" font-family="Arial, sans-serif" font-size="34">Minecraft speedrun tournament for streamers</text>
+  <text x="92" y="506" fill="#ffe55a" font-family="Arial, sans-serif" font-size="36" font-weight="800">example.com</text>
+  <rect x="878" y="122" width="210" height="210" rx="24" fill="#24113f" stroke="#a78bfa" stroke-width="4"/>
+  <path d="M985 170c42 0 76 34 76 76s-34 76-76 76-76-34-76-76 34-76 76-76z" fill="#6d28d9"/>
+  <path d="M984 198c26 0 48 22 48 48s-22 48-48 48-48-22-48-48 22-48 48-48z" fill="#c084fc"/>
+</svg>

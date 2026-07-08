@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="{{if .AboutEnglish}}en{{else}}ru{{end}}">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{if .AboutEnglish}}About the Tournament{{else}}Рћ С‚СѓСЂРЅРёСЂРµ{{end}} - {{.Profile.ShortName}}</title>
+  </head>
+  <body>
+    <main class="info-page about-page">
+      <section class="about-hero">
+        <p class="eyebrow">{{.Profile.SiteName}}</p>
+        <div class="about-title-row">
+          <h1>{{if .AboutEnglish}}About the Tournament{{else}}Рћ С‚СѓСЂРЅРёСЂРµ{{end}}</h1>
+          <div class="about-actions">
+            <nav class="about-language-switch" aria-label="Language">
+              <a class="{{if not .AboutEnglish}}is-active{{end}}" href="/about" lang="ru">RU</a>
+              <a class="{{if .AboutEnglish}}is-active{{end}}" href="/about?lang=en" lang="en">EN</a>
+            </nav>
+            <a class="button-secondary about-home-link" href="/">{{if .AboutEnglish}}Back to Home{{else}}Р’РµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ{{end}}</a>
+          </div>
+        </div>
+      </section>
+
+      {{if .AboutEnglish}}
+      <section class="about-flow" aria-label="Tournament description">
+        <article class="about-block about-block-left">
+          <h2>Who We Are</h2>
+          <p>{{.Profile.SiteName}} is an online Minecraft speedrun tournament for streamers.</p>
+          <p>Participants race to beat {{.Profile.GameName}} {{.Profile.GameVersion}} as fast as possible, and every result only counts during an active livestream. This keeps the tournament clear for viewers, fair for participants, and easier to review.</p>
+        </article>
+
+        <article class="about-block about-block-right">
+          <h2>Format</h2>
+          <p>{{.Profile.ShortName}} brings together streamers who want more than a single good time. The tournament is built as an open race with streams, a leaderboard, rules, moderation, qualification, playoffs, and a final.</p>
+        </article>
+
+        <article class="about-block about-block-left">
+          <h2>Result Review</h2>
+          <p>Results are submitted through the official mod and then reviewed by moderation. On the website, viewers can follow participants, times, progress, and the current standings.</p>
+        </article>
+
+        <article class="about-block about-block-right">
+          <h2>Goal</h2>
+          <p>Our goal is to make Minecraft speedrunning more exciting, transparent, and interesting for streamers and their viewers.</p>
+        </article>
+      </section>
+      {{else}}
+      <section class="about-flow" aria-label="РћРїРёСЃР°РЅРёРµ С‚СѓСЂРЅРёСЂР°">
+        <article class="about-block about-block-left">
+          <h2>РљС‚Рѕ РјС‹ С‚Р°РєРёРµ</h2>
+          <p>{{.Profile.SiteName}} вЂ” СЌС‚Рѕ РѕРЅР»Р°Р№РЅ-С‚СѓСЂРЅРёСЂ РїРѕ Minecraft speedrun РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ.</p>
+          <p>РЈС‡Р°СЃС‚РЅРёРєРё СЃРѕСЂРµРІРЅСѓСЋС‚СЃСЏ РІ РїСЂРѕС…РѕР¶РґРµРЅРёРё {{.Profile.GameName}} {{.Profile.GameVersion}} РЅР° СЃРєРѕСЂРѕСЃС‚СЊ, Р° РєР°Р¶РґС‹Р№ Р·Р°Р±РµРі Р·Р°СЃС‡РёС‚С‹РІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІРѕ РІСЂРµРјСЏ Р°РєС‚РёРІРЅРѕР№ С‚СЂР°РЅСЃР»СЏС†РёРё. Р­С‚Рѕ РґРµР»Р°РµС‚ С‚СѓСЂРЅРёСЂ РїРѕРЅСЏС‚РЅС‹Рј РґР»СЏ Р·СЂРёС‚РµР»РµР№, С‡РµСЃС‚РЅС‹Рј РґР»СЏ СѓС‡Р°СЃС‚РЅРёРєРѕРІ Рё СѓРґРѕР±РЅС‹Рј РґР»СЏ РїСЂРѕРІРµСЂРєРё СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ.</p>
+        </article>
+
+        <article class="about-block about-block-right">
+          <h2>Р¤РѕСЂРјР°С‚</h2>
+          <p>{{.Profile.ShortName}} РѕР±СЉРµРґРёРЅСЏРµС‚ СЃС‚СЂРёРјРµСЂРѕРІ, РєРѕС‚РѕСЂС‹Рµ С…РѕС‚СЏС‚ РЅРµ РїСЂРѕСЃС‚Рѕ РїРѕСЃС‚Р°РІРёС‚СЊ С…РѕСЂРѕС€РµРµ РІСЂРµРјСЏ, Р° РїСЂРѕР№С‚Рё С‚СѓСЂРЅРёСЂ РІ РѕС‚РєСЂС‹С‚РѕРј С„РѕСЂРјР°С‚Рµ: СЃРѕ СЃС‚СЂРёРјР°РјРё, Р»РёРґРµСЂР±РѕСЂРґРѕРј, РїСЂР°РІРёР»Р°РјРё, РјРѕРґРµСЂР°С†РёРµР№, РєРІР°Р»РёС„РёРєР°С†РёРµР№, РїР»РµР№-РѕС„С„ Рё С„РёРЅР°Р»РѕРј.</p>
+        </article>
+
+        <article class="about-block about-block-left">
+          <h2>РџСЂРѕРІРµСЂРєР° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ</h2>
+          <p>Р РµР·СѓР»СЊС‚Р°С‚С‹ РѕС‚РїСЂР°РІР»СЏСЋС‚СЃСЏ С‡РµСЂРµР· РѕС„РёС†РёР°Р»СЊРЅС‹Р№ РјРѕРґ, РїРѕСЃР»Рµ С‡РµРіРѕ РїСЂРѕС…РѕРґСЏС‚ РїСЂРѕРІРµСЂРєСѓ РјРѕРґРµСЂР°С†РёРµР№. РќР° СЃР°Р№С‚Рµ РјРѕР¶РЅРѕ СЃР»РµРґРёС‚СЊ Р·Р° СѓС‡Р°СЃС‚РЅРёРєР°РјРё, РёС… РІСЂРµРјРµРЅРµРј, РїСЂРѕРіСЂРµСЃСЃРѕРј Рё Р°РєС‚СѓР°Р»СЊРЅС‹Рј РїРѕР»РѕР¶РµРЅРёРµРј РІ СЂРµР№С‚РёРЅРіРµ.</p>
+        </article>
+
+        <article class="about-block about-block-right">
+          <h2>Р¦РµР»СЊ</h2>
+          <p>РќР°С€Р° С†РµР»СЊ вЂ” СЃРґРµР»Р°С‚СЊ Minecraft speedrun Р±РѕР»РµРµ Р·СЂРµР»РёС‰РЅС‹Рј, РїСЂРѕР·СЂР°С‡РЅС‹Рј Рё РёРЅС‚РµСЂРµСЃРЅС‹Рј РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ Рё РёС… Р·СЂРёС‚РµР»РµР№.</p>
+        </article>
+      </section>
+      {{end}}
+    </main>
+
+    {{template "layout_footer" .}}
+  </body>
+</html>

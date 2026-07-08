@@ -1,0 +1,17 @@
+{{define "layout_header"}}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    window.TOURNAMENT_PROFILE = {
+      siteName: "{{.Profile.SiteName}}",
+      shortName: "{{.Profile.ShortName}}",
+      telegramUrl: "{{.Profile.TelegramURL}}",
+      discordUrl: "{{.Profile.DiscordURL}}",
+      supportUrl: "{{.Profile.SupportURL}}"
+    };
+  </script>
+  <script src="/static/theme.js?v=portal-theme-v3"></script>
+  <link rel="stylesheet" href="/static/styles.css?v=mobile-bracket-v21" />
+  <link rel="icon" type="image/svg+xml" href="/static/favicon-portal-frame-00.svg?v=portal-favicon-v3" data-tournament-favicon />
+  <script src="/static/favicon.js?v=portal-favicon-v3" defer></script>
+{{end}}

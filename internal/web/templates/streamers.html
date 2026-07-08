@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}} - РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ</title>
+  </head>
+  <body>
+    <main class="info-page streamer-kit-page">
+      <section class="about-hero">
+        <div class="about-title-row">
+          <h1>Р”Р»СЏ СЃС‚СЂРёРјРµСЂРѕРІ</h1>
+          <a class="button-secondary about-home-link" href="/">Р’РµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ</a>
+        </div>
+        <p class="muted">Р“РѕС‚РѕРІС‹Рµ РјР°С‚РµСЂРёР°Р»С‹ РґР»СЏ Р°РЅРѕРЅСЃР° {{.Profile.ShortName}} РІ Twitch, Discord, Telegram Рё РЅР° СЃС‚СЂРёРјРµ. Р—Р°Р±РµРіРё РїСЂРѕС…РѕРґСЏС‚ РІ {{.Profile.GameName}} {{.Profile.GameVersion}}, РѕС„РёС†РёР°Р»СЊРЅС‹Р№ РјРѕРґ С‚РѕР¶Рµ СЂР°СЃСЃС‡РёС‚Р°РЅ РЅР° 1.21.11.</p>
+      </section>
+
+      <section class="streamer-kit-grid" aria-label="РњР°С‚РµСЂРёР°Р»С‹ РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ">
+        <article class="streamer-kit-panel streamer-kit-wide streamer-version-panel">
+          <p class="eyebrow">Р’РµСЂСЃРёСЏ С‚СѓСЂРЅРёСЂР°</p>
+          <h2>{{.Profile.GameName}} {{.Profile.GameVersion}}</h2>
+          <p class="streamer-copy">РЈРєР°Р·С‹РІР°Р№С‚Рµ СЌС‚Сѓ РІРµСЂСЃРёСЋ РІ РѕРїРёСЃР°РЅРёРё СЃС‚СЂРёРјР° Рё РїРѕСЃС‚Р°С…: {{.Profile.ShortName}} РїСЂРѕРІРѕРґРёС‚СЃСЏ РЅР° {{.Profile.GameName}} {{.Profile.GameVersion}}, Р° РјРѕРґС‹ {{.Profile.ShortName}} РїСѓР±Р»РёРєСѓСЋС‚СЃСЏ РїРѕРґ СЌС‚Сѓ Р¶Рµ РІРµСЂСЃРёСЋ РёРіСЂС‹.</p>
+        </article>
+
+        <article class="streamer-kit-panel streamer-kit-wide">
+          <p class="eyebrow">Twitch</p>
+          <h2>Р‘Р°РЅРЅРµСЂС‹ РґР»СЏ РѕРїРёСЃР°РЅРёСЏ РєР°РЅР°Р»Р°</h2>
+          <div class="streamer-banner-row">
+            <a class="streamer-banner" href="/static/streamers/twitch-banner-1.png" download="twitch-banner-1.png" target="_blank" rel="noopener noreferrer">
+              <img src="/static/streamers/twitch-banner-1.png" alt="Р‘Р°РЅРЅРµСЂ {{.Profile.ShortName}} РґР»СЏ РѕРїРёСЃР°РЅРёСЏ Twitch РєР°РЅР°Р»Р°" />
+            </a>
+            <a class="streamer-banner" href="/static/streamers/twitch-banner-2.png" download="twitch-banner-2.png" target="_blank" rel="noopener noreferrer">
+              <img src="/static/streamers/twitch-banner-2.png" alt="Р‘Р°РЅРЅРµСЂ {{.Profile.ShortName}} РґР»СЏ РїРѕРґР°С‡Рё Р·Р°СЏРІРєРё" />
+            </a>
+          </div>
+        </article>
+
+        <article class="streamer-kit-panel">
+          <p class="eyebrow">РљРѕРјР°РЅРґР° С‡Р°С‚Р°</p>
+          <h2>!С‚СѓСЂРЅРёСЂ</h2>
+          <p class="streamer-copy">{{.Profile.ShortName}} - С‚СѓСЂРЅРёСЂ РїРѕ {{.Profile.GameName}} {{.Profile.GameVersion}} speedrun РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ. Р—Р°Р±РµРіРё Р·Р°СЃС‡РёС‚С‹РІР°СЋС‚СЃСЏ С‚РѕР»СЊРєРѕ РІРѕ РІСЂРµРјСЏ Р°РєС‚РёРІРЅРѕРіРѕ СЃС‚СЂРёРјР°. РџСЂРёР·РѕРІРѕР№ С„РѕРЅРґ 5000 СЂСѓР±Р»РµР№. РЎР°Р№С‚: {{.Profile.BaseURL}}/</p>
+        </article>
+
+        <article class="streamer-kit-panel">
+          <p class="eyebrow">Discord</p>
+          <h2>РљРѕСЂРѕС‚РєРёР№ С‚РµРєСЃС‚</h2>
+          <p class="streamer-copy">РЈС‡Р°СЃС‚РІСѓСЋ РІ {{.Profile.SiteName}} - {{.Profile.GameName}} {{.Profile.GameVersion}} speedrun С‚СѓСЂРЅРёСЂРµ РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ. Р РµР·СѓР»СЊС‚Р°С‚С‹ РёРґСѓС‚ С‡РµСЂРµР· РѕС„РёС†РёР°Р»СЊРЅС‹Р№ РјРѕРґ, СЃС‚СЂРёРј Рё РїСЂРѕРІРµСЂРєСѓ. РџРѕРґР°С‚СЊ Р·Р°СЏРІРєСѓ: {{.Profile.BaseURL}}/apply</p>
+        </article>
+
+        <article class="streamer-kit-panel">
+          <p class="eyebrow">Telegram</p>
+          <h2>РљРѕСЂРѕС‚РєРёР№ С‚РµРєСЃС‚</h2>
+          <p class="streamer-copy">РЇ РёРґСѓ РІ {{.Profile.ShortName}}: {{.Profile.GameName}} {{.Profile.GameVersion}} speedrun С‚СѓСЂРЅРёСЂ РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ. РљР°Р¶РґС‹Р№ Р·Р°Р±РµРі Р·Р°СЃС‡РёС‚С‹РІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ РЅР° СЃС‚СЂРёРјРµ, Р° СЂРµР·СѓР»СЊС‚Р°С‚С‹ РїСЂРѕРІРµСЂСЏСЋС‚СЃСЏ РјРѕРґРµСЂР°С†РёРµР№. Р—Р°СЏРІРєР°: {{.Profile.BaseURL}}/apply</p>
+        </article>
+
+        <article class="streamer-kit-panel">
+          <p class="eyebrow">РЎСЃС‹Р»РєРё</p>
+          <h2>Р РµРіРёСЃС‚СЂР°С†РёСЏ Рё СЃС‚Р°С‚СѓСЃ</h2>
+          <div class="streamer-link-stack">
+            {{if not .ApplicationsClosed}}
+            <a class="button" href="/apply">РџРѕРґР°С‚СЊ Р·Р°СЏРІРєСѓ</a>
+            {{else}}
+            <a class="button" href="/login">Р’РѕР№С‚Рё РІ РєР°Р±РёРЅРµС‚</a>
+            {{end}}
+            <a class="button-secondary" href="{{.Profile.SupportURL}}" target="_blank" rel="noopener noreferrer">РџСЂРѕРІРµСЂРёС‚СЊ Р·Р°СЏРІРєСѓ</a>
+          </div>
+          <p class="consent-note">РџРѕСЃР»Рµ РїРѕРґР°С‡Рё Р·Р°СЏРІРєРё СЃС‚Р°С‚СѓСЃ РјРѕР¶РЅРѕ РїСЂРѕРІРµСЂРёС‚СЊ РїРѕ РЅРѕРјРµСЂСѓ Р·Р°СЏРІРєРё С‡РµСЂРµР· Telegram-Р±РѕС‚Р° {{.Profile.ShortName}}.</p>
+        </article>
+
+        <article class="streamer-kit-panel streamer-kit-wide">
+          <p class="eyebrow">РџСЂРѕРјРѕ РјР°С‚РµСЂРёР°Р»С‹</p>
+          <h2>РЎРєР°С‡Р°С‚СЊ РґР»СЏ СЃС‚СЂРёРјР° Рё РїРѕСЃС‚РѕРІ</h2>
+          <p class="streamer-copy">РћС‚РєСЂРѕР№С‚Рµ РЅСѓР¶РЅС‹Р№ РјР°С‚РµСЂРёР°Р», СЃРєР°С‡Р°Р№С‚Рµ РєРЅРѕРїРєРѕР№ РёР»Рё СЃРѕС…СЂР°РЅРёС‚Рµ РїСЂР°РІРѕР№ РєРЅРѕРїРєРѕР№ РјС‹С€Рё. РќР°Р·РІР°РЅРёСЏ СѓР¶Рµ РїРѕРґРїРёСЃР°РЅС‹: РїСЂРѕРјРѕ 1, РїСЂРѕРјРѕ 2 Рё С‚Р°Рє РґР°Р»РµРµ.</p>
+          <div class="promo-media-grid">
+            <article class="promo-media-card">
+              <a class="promo-media-preview" href="/static/streamers/promo-1.png" download="promo-1.png" target="_blank" rel="noopener noreferrer">
+                <img src="/static/streamers/promo-1.png" alt="РџСЂРѕРјРѕ 1 {{.Profile.ShortName}}" />
+              </a>
+              <div class="promo-media-copy">
+                <h3>РџСЂРѕРјРѕ 1</h3>
+                <p>Р‘РµР»С‹Р№ РїРѕСЂС‚Р°Р» {{.Profile.ShortName}} РґР»СЏ РїРѕСЃС‚РѕРІ Рё РѕС„РѕСЂРјР»РµРЅРёСЏ.</p>
+                <a class="button-secondary" href="/static/streamers/promo-1.png" download="promo-1.png">РЎРєР°С‡Р°С‚СЊ</a>
+              </div>
+            </article>
+            <article class="promo-media-card">
+              <a class="promo-media-preview" href="/static/streamers/promo-2.png" download="promo-2.png" target="_blank" rel="noopener noreferrer">
+                <img src="/static/streamers/promo-2.png" alt="РџСЂРѕРјРѕ 2 {{.Profile.ShortName}}" />
+              </a>
+              <div class="promo-media-copy">
+                <h3>РџСЂРѕРјРѕ 2</h3>
+                <p>РўРµРјРЅС‹Р№ РїРѕСЂС‚Р°Р» {{.Profile.ShortName}} РґР»СЏ РїРѕСЃС‚РѕРІ Рё РѕС„РѕСЂРјР»РµРЅРёСЏ.</p>
+                <a class="button-secondary" href="/static/streamers/promo-2.png" download="promo-2.png">РЎРєР°С‡Р°С‚СЊ</a>
+              </div>
+            </article>
+            <article class="promo-media-card promo-media-card-wide">
+              <a class="promo-media-preview" href="/static/streamers/promo-3.png" download="promo-3.png" target="_blank" rel="noopener noreferrer">
+                <img src="/static/streamers/promo-3.png" alt="РџСЂРѕРјРѕ 3 {{.Profile.ShortName}} С‚СѓСЂРЅРёСЂ" />
+              </a>
+              <div class="promo-media-copy">
+                <h3>РџСЂРѕРјРѕ 3</h3>
+                <p>РљСЂСѓРїРЅР°СЏ РЅР°РґРїРёСЃСЊ РґР»СЏ РѕРІРµСЂР»РµСЏ РёР»Рё Р°РЅРѕРЅСЃР°.</p>
+                <a class="button-secondary" href="/static/streamers/promo-3.png" download="promo-3.png">РЎРєР°С‡Р°С‚СЊ</a>
+              </div>
+            </article>
+            <article class="promo-media-card promo-media-card-wide">
+              <a class="promo-media-preview" href="/static/streamers/promo-4.png" download="promo-4.png" target="_blank" rel="noopener noreferrer">
+                <img src="/static/streamers/promo-4.png" alt="РџСЂРѕРјРѕ 4 {{.Profile.ShortName}} Ready С†РІРµС‚" />
+              </a>
+              <div class="promo-media-copy">
+                <h3>РџСЂРѕРјРѕ 4</h3>
+                <p>Р¦РІРµС‚РЅРѕР№ {{.Profile.ShortName}} Ready РґР»СЏ Р°РЅРѕРЅСЃР° СЃС‚Р°СЂС‚Р°.</p>
+                <a class="button-secondary" href="/static/streamers/promo-4.png" download="promo-4.png">РЎРєР°С‡Р°С‚СЊ</a>
+              </div>
+            </article>
+            <article class="promo-media-card promo-media-card-wide">
+              <a class="promo-media-preview" href="/static/streamers/promo-5.png" download="promo-5.png" target="_blank" rel="noopener noreferrer">
+                <img src="/static/streamers/promo-5.png" alt="РџСЂРѕРјРѕ 5 {{.Profile.ShortName}} Ready" />
+              </a>
+              <div class="promo-media-copy">
+                <h3>РџСЂРѕРјРѕ 5</h3>
+                <p>Р‘РµР»С‹Р№ {{.Profile.ShortName}} Ready РґР»СЏ С‡РёСЃС‚РѕРіРѕ РѕС„РѕСЂРјР»РµРЅРёСЏ.</p>
+                <a class="button-secondary" href="/static/streamers/promo-5.png" download="promo-5.png">РЎРєР°С‡Р°С‚СЊ</a>
+              </div>
+            </article>
+            <article class="promo-media-card promo-media-video">
+              <div class="promo-media-preview">
+                <video src="/static/streamers/promo-video-1.webm" controls preload="metadata"></video>
+              </div>
+              <div class="promo-media-copy">
+                <h3>РџСЂРѕРјРѕ СЂРѕР»РёРє 1</h3>
+                <p>Р’РёРґРµРѕ РґР»СЏ Р°РЅРѕРЅСЃР° С‚СѓСЂРЅРёСЂР° РІ СЃРѕС†СЃРµС‚СЏС… РёР»Рё РЅР° СЃС‚СЂРёРјРµ.</p>
+                <a class="button-secondary" href="/static/streamers/promo-video-1.webm" download="promo-video-1.webm">РЎРєР°С‡Р°С‚СЊ</a>
+              </div>
+            </article>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    {{template "layout_footer" .}}
+  </body>
+</html>

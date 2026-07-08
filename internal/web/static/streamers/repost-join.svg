@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Join TOURNAMENT">
+  <rect width="1200" height="675" fill="#10041c"/>
+  <rect x="58" y="58" width="1084" height="559" rx="34" fill="#1b0b2e" stroke="#7c3aed" stroke-width="3"/>
+  <text x="104" y="138" fill="#ffe55a" font-family="Arial, sans-serif" font-size="30" font-weight="800">РџРћР”РђР™ Р—РђРЇР’РљРЈ</text>
+  <text x="104" y="260" fill="#ffffff" font-family="Arial, sans-serif" font-size="78" font-weight="900">TOURNAMENT Р”Р›РЇ</text>
+  <text x="104" y="344" fill="#ffffff" font-family="Arial, sans-serif" font-size="78" font-weight="900">РЎРўР РРњР•Р РћР’</text>
+  <text x="108" y="424" fill="#d9cdef" font-family="Arial, sans-serif" font-size="34">Р—Р°Р±РµРіРё Р·Р°СЃС‡РёС‚С‹РІР°СЋС‚СЃСЏ С‚РѕР»СЊРєРѕ РІРѕ РІСЂРµРјСЏ Р°РєС‚РёРІРЅРѕР№ С‚СЂР°РЅСЃР»СЏС†РёРё.</text>
+  <text x="108" y="504" fill="#ffffff" font-family="Arial, sans-serif" font-size="30">Р РµРіРёСЃС‚СЂР°С†РёСЏ: example.com/apply</text>
+  <g transform="translate(820 180)">
+    <rect width="220" height="220" rx="28" fill="#2f1550"/>
+    <path d="M110 36l23 47 52 8-38 37 9 52-46-24-46 24 9-52-38-37 52-8z" fill="#ffe55a"/>
+  </g>
+</svg>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}} - Р РµРєРѕСЂРґС‹ РёРіСЂРѕРєР° {{if .Participant.TwitchDisplayName}}{{.Participant.TwitchDisplayName}}{{else}}{{.Participant.TwitchLogin}}{{end}}</title>
+  </head>
+  <body>
+    <main class="container admin-page">
+      <section class="info-hero bracket-hero">
+        <div class="about-title-row">
+          <div class="admin-player-header-card">
+            <img class="admin-header-avatar" src="{{if .Participant.AvatarURL}}{{.Participant.AvatarURL}}{{else}}/static/avatar-placeholder.svg{{end}}" alt="" />
+            <div>
+              <p class="eyebrow">Р РµРєРѕСЂРґС‹ СѓС‡Р°СЃС‚РЅРёРєР°</p>
+              <h1>{{if .Participant.TwitchDisplayName}}{{.Participant.TwitchDisplayName}}{{else}}{{.Participant.TwitchLogin}}{{end}}</h1>
+              <div class="admin-player-meta-badges">
+                <span class="meta-badge">MC: {{if .Participant.MinecraftNick}}{{.Participant.MinecraftNick}}{{else}}вЂ”{{end}}</span>
+                <span class="meta-badge">РўРµРєСѓС‰РёР№ PB: {{if .Participant.BestTimeMS}}<strong id="player-pb">{{formatDuration .Participant.BestTimeMS}}</strong>{{else}}<strong id="player-pb">РќРµС‚</strong>{{end}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-panel-tools">
+            <a class="button-secondary about-home-link" href="/admin/runs">Рљ СЃРїРёСЃРєСѓ РёРіСЂРѕРєРѕРІ</a>
+            <a class="button-secondary about-home-link" href="/admin">Р’ Р°РґРјРёРЅРєСѓ</a>
+          </div>
+        </div>
+      </section>
+ 
+      <section class="panel admin-add-run-section" style="margin-bottom: var(--space-4);">
+        <div class="panel-body">
+          <h3 style="margin-top: 0; margin-bottom: var(--space-3);">Р”РѕР±Р°РІРёС‚СЊ Р·Р°Р±РµРі РІСЂСѓС‡РЅСѓСЋ</h3>
+          <form class="admin-add-run-form" id="admin-add-run-form" method="POST" action="/api/admin/participants/{{.Participant.ID}}/runs/add">
+            <div class="admin-form-row" style="display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-3);">
+              <label style="flex: 1; min-width: 180px;">
+                <span style="display: block; margin-bottom: var(--space-1); font-size: 0.85rem; color: var(--muted);">Р’СЂРµРјСЏ Р·Р°Р±РµРіР° (РЅР°РїСЂРёРјРµСЂ, 12:34.567) *</span>
+                <input class="text-input" type="text" name="time" placeholder="12:34.567" autocomplete="off" required style="width: 100%; min-height: 40px; padding: 0 10px; background: var(--bg-b); color: var(--text); border: 1px solid var(--panel-border); border-radius: var(--radius);" />
+              </label>
+              <label style="flex: 1; min-width: 180px;">
+                <span style="display: block; margin-bottom: var(--space-1); font-size: 0.85rem; color: var(--muted);">РЎРїР»РёС‚ РќРµР·РµСЂР° (РІС…РѕРґ, РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)</span>
+                <input class="text-input" type="text" name="netherSplit" placeholder="02:15" autocomplete="off" style="width: 100%; min-height: 40px; padding: 0 10px; background: var(--bg-b); color: var(--text); border: 1px solid var(--panel-border); border-radius: var(--radius);" />
+              </label>
+              <label style="flex: 1; min-width: 180px;">
+                <span style="display: block; margin-bottom: var(--space-1); font-size: 0.85rem; color: var(--muted);">РЎРїР»РёС‚ Р­РЅРґР° (РІС…РѕРґ, РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)</span>
+                <input class="text-input" type="text" name="endSplit" placeholder="10:30" autocomplete="off" style="width: 100%; min-height: 40px; padding: 0 10px; background: var(--bg-b); color: var(--text); border: 1px solid var(--panel-border); border-radius: var(--radius);" />
+              </label>
+            </div>
+            <div class="admin-form-row" style="display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4);">
+              <label style="flex: 1; min-width: 180px;">
+                <span style="display: block; margin-bottom: var(--space-1); font-size: 0.85rem; color: var(--muted);">Р­С‚Р°Рї / Р¤Р°Р·Р°</span>
+                <select class="text-input" name="phase" style="width: 100%; background: var(--bg-b); color: var(--text); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 0 10px; min-height: 40px;">
+                  <option value="qualification" {{if eq .CurrentPhase "qualification"}}selected{{end}}>РљРІР°Р»РёС„РёРєР°С†РёСЏ</option>
+                  <option value="playoff" {{if eq .CurrentPhase "playoff"}}selected{{end}}>РџР»РµР№-РѕС„С„</option>
+                  <option value="final" {{if eq .CurrentPhase "final"}}selected{{end}}>Р¤РёРЅР°Р»</option>
+                  <option value="test" {{if eq .CurrentPhase "test"}}selected{{end}}>РўРµСЃС‚</option>
+                  <option value="" {{if eq .CurrentPhase ""}}selected{{end}}>Р‘РµР· СЌС‚Р°РїР°</option>
+                </select>
+              </label>
+              <label style="flex: 1; min-width: 180px;">
+                <span style="display: block; margin-bottom: var(--space-1); font-size: 0.85rem; color: var(--muted);">ID РјР°С‚С‡Р° (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)</span>
+                <input class="text-input" type="text" name="matchId" placeholder="match_1_1" autocomplete="off" style="width: 100%; min-height: 40px; padding: 0 10px; background: var(--bg-b); color: var(--text); border: 1px solid var(--panel-border); border-radius: var(--radius);" />
+              </label>
+            </div>
+            <button class="button" type="submit" style="min-height: 42px; border-radius: var(--radius); padding: 0 24px;">Р”РѕР±Р°РІРёС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚</button>
+          </form>
+          <p class="muted" id="admin-add-run-message" style="margin-top: var(--space-2); color: var(--danger);" hidden></p>
+        </div>
+      </section>
+
+      <section class="panel admin-runs-list-section">
+        <div class="panel-body">
+          <div class="admin-table-container">
+            <table class="admin-runs-table">
+              <thead>
+                <tr>
+                  <th>Р РµР·СѓР»СЊС‚Р°С‚</th>
+                  <th>РђРґСЃРєРёРµ СЃРїР»РёС‚С‹ (Р’С…РѕРґ / Р’С‹С…РѕРґ)</th>
+                  <th>Р”Р°С‚Р° Рё РІСЂРµРјСЏ (UTC)</th>
+                  <th>РСЃС‚РѕС‡РЅРёРє / Р¤Р°Р·Р°</th>
+                  <th>Р’РёРґРµРѕ / Р”РѕРєР°Р·Р°С‚РµР»СЊСЃС‚РІРѕ</th>
+                  <th>РЎС‚Р°С‚СѓСЃ</th>
+                  <th>Р”РµР№СЃС‚РІРёРµ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{if .Runs}}
+                  {{range .Runs}}
+                  <tr class="admin-run-row is-status-{{.Status}}" data-run-id="{{.ID}}">
+                    <td class="cell-duration">
+                      <strong>{{formatDuration .TimeMS}}</strong>
+                    </td>
+                    <td class="cell-splits">
+                      {{if .NetherSplitMS}}
+                        <span class="split-value">рџљЄ {{formatDuration .NetherSplitMS}}</span>
+                      {{else}}
+                        <span class="split-empty">вЂ”</span>
+                      {{end}}
+                      <span class="split-separator">/</span>
+                      {{if .NetherExitSplitMS}}
+                        <span class="split-value">рџ”Ґ {{formatDuration .NetherExitSplitMS}}</span>
+                      {{else}}
+                        <span class="split-empty">вЂ”</span>
+                      {{end}}
+                    </td>
+                    <td class="cell-date">
+                      <time datetime="{{.FinishedAt}}">{{formatDateTime .FinishedAt}}</time>
+                    </td>
+                    <td class="cell-source">
+                      <span class="source-badge is-source-{{.Source}}">{{.Source}}</span>
+                      {{if .Phase}}
+                        <span class="phase-badge is-phase-{{.Phase}}">{{.Phase}}</span>
+                      {{end}}
+                    </td>
+                    <td class="cell-proof">
+                      {{if .ProofURL}}
+                        <a href="{{.ProofURL}}" target="_blank" rel="noopener noreferrer" class="link-proof">РЎСЃС‹Р»РєР° в†—</a>
+                      {{else}}
+                        <span class="muted">вЂ”</span>
+                      {{end}}
+                    </td>
+                    <td class="cell-status">
+                      <span class="run-status-badge badge-{{.Status}}">
+                        {{if eq .Status "approved"}}РћРґРѕР±СЂРµРЅ{{else if eq .Status "rejected"}}РћС‚РјРµРЅРµРЅ{{else}}РћР¶РёРґР°РµС‚{{end}}
+                      </span>
+                    </td>
+                    <td class="cell-action">
+                      <button class="button-action button-danger" type="button" data-action-btn="reject" {{if ne .Status "approved"}}style="display:none;"{{end}}>
+                        РћС‚РјРµРЅРёС‚СЊ
+                      </button>
+                      <button class="button-action button-primary" type="button" data-action-btn="approve" {{if ne .Status "rejected"}}style="display:none;"{{end}}>
+                        Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ
+                      </button>
+                    </td>
+                  </tr>
+                  {{end}}
+                {{else}}
+                  <tr>
+                    <td colspan="7" class="table-empty">Р—Р°Р±РµРіРѕРІ РЅРµ Р·Р°С„РёРєСЃРёСЂРѕРІР°РЅРѕ.</td>
+                  </tr>
+                {{end}}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    {{template "layout_footer" .}}
+
+    <script src="/static/admin-runs.js?v=admin-runs-v3" defer></script>
+  </body>
+</html>

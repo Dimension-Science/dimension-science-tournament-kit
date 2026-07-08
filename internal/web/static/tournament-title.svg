@@ -1,0 +1,45 @@
+<svg width="600" height="170" viewBox="0 0 600 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tournament">
+  <defs>
+    <g id="A"><path d="M1 0h3v1H1zM0 1h1v6H0zM4 1h1v6H4zM1 3h3v1H1z" /></g>
+    <g id="D"><path d="M0 0h4v1H0zM0 1h1v5H0zM4 1h1v5H4zM0 6h4v1H0z" /></g>
+    <g id="E"><path d="M0 0h5v1H0zM0 1h1v5H0zM0 3h4v1H0zM0 6h5v1H0z" /></g>
+    <g id="I"><path d="M0 0h5v1H0zM2 1h1v5H2zM0 6h5v1H0z" /></g>
+    <g id="M"><path d="M0 0h1v7H0zM4 0h1v7H4zM1 1h1v1H1zM3 1h1v1H3zM2 2h1v2H2z" /></g>
+    <g id="N"><path d="M0 0h1v7H0zM4 0h1v7H4zM1 1h1v1H1zM2 2h1v2H2zM3 4h1v2H3z" /></g>
+    <g id="O"><path d="M1 0h3v1H1zM0 1h1v5H0zM4 1h1v5H4zM1 6h3v1H1z" /></g>
+    <g id="R"><path d="M0 0h4v1H0zM0 1h1v6H0zM4 1h1v2H4zM1 3h3v1H1zM2 4h1v1H2zM3 5h1v1H3zM4 6h1v1H4z" /></g>
+    <g id="S"><path d="M1 0h4v1H1zM0 1h1v2H0zM1 3h3v1H1zM4 4h1v2H4zM0 6h4v1H0z" /></g>
+    <g id="T"><path d="M0 0h5v1H0zM2 1h1v6H2z" /></g>
+    <g id="U"><path d="M0 0h1v6H0zM4 0h1v6H4zM1 6h3v1H1z" /></g>
+  </defs>
+
+  <g fill="#f4f7ff" shape-rendering="crispEdges">
+    <g transform="translate(61.5 24) scale(9)">
+      <use href="#D" x="0" y="0" />
+      <use href="#I" x="6" y="0" />
+      <use href="#M" x="12" y="0" />
+      <use href="#E" x="18" y="0" />
+      <use href="#N" x="24" y="0" />
+      <use href="#S" x="30" y="0" />
+      <use href="#I" x="36" y="0" />
+      <use href="#O" x="42" y="0" />
+      <use href="#N" x="48" y="0" />
+    </g>
+
+    <g transform="translate(59.3 107) scale(5.8)">
+      <use href="#T" x="0" y="0" />
+      <use href="#O" x="6" y="0" />
+      <use href="#U" x="12" y="0" />
+      <use href="#R" x="18" y="0" />
+      <use href="#N" x="24" y="0" />
+      <use href="#A" x="30" y="0" />
+      <use href="#M" x="36" y="0" />
+      <use href="#E" x="42" y="0" />
+      <use href="#N" x="48" y="0" />
+      <use href="#T" x="54" y="0" />
+      <use href="#R" x="66" y="0" />
+      <use href="#U" x="72" y="0" />
+      <use href="#N" x="78" y="0" />
+    </g>
+  </g>
+</svg>

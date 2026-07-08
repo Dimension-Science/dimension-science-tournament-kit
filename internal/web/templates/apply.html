@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}} - Р·Р°СЏРІРєР°</title>
+    <script src="/static/apply.js?v=telegram-applications-v1" defer></script>
+  </head>
+  <body>
+    <main class="apply-page">
+      <div class="apply-shell">
+        <div class="apply-top-actions">
+          <a class="button-secondary" href="/">РћС‚РїСЂР°РІРёС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ</a>
+        </div>
+
+      <section class="apply-card">
+        <div class="apply-copy">
+          <p class="eyebrow">{{.TournamentTitle}}</p>
+          <h1>РџРѕРґР°Р№ Р·Р°СЏРІРєСѓ РЅР° {{.Profile.ShortName}}</h1>
+          <p class="muted">{{.Profile.SiteName}} - РѕРЅР»Р°Р№РЅ-С‚СѓСЂРЅРёСЂ РїРѕ Minecraft speedrun РґР»СЏ СЃС‚СЂРёРјРµСЂРѕРІ. Р—Р°Р±РµРіРё РїСЂРѕС…РѕРґСЏС‚ РІ {{.Profile.GameName}} {{.Profile.GameVersion}} Рё Р·Р°СЃС‡РёС‚С‹РІР°СЋС‚СЃСЏ С‚РѕР»СЊРєРѕ РІРѕ РІСЂРµРјСЏ Р°РєС‚РёРІРЅРѕР№ С‚СЂР°РЅСЃР»СЏС†РёРё.</p>
+        </div>
+
+        {{if .Error}}
+        <p class="message error">{{.Error}}</p>
+        {{end}}
+
+        {{if and .StatusTitle (ne .ApplicationStatus "rejected")}}
+        <div class="apply-status-box">
+          <strong>{{.StatusTitle}}</strong>
+          <span>{{.StatusText}}</span>
+          {{if .ApplicationNumber}}
+          <div class="apply-application-number" aria-label="Р’Р°С€ РЅРѕРјРµСЂ Р·Р°СЏРІРєРё">
+            <span class="apply-application-number-value">#{{.ApplicationNumber}}</span>
+            <span class="apply-application-number-label">РІР°С€ РЅРѕРјРµСЂ Р·Р°СЏРІРєРё</span>
+          </div>
+          <span class="muted">РЎРѕС…СЂР°РЅРёС‚Рµ РµРіРѕ: РїРѕ СЌС‚РѕРјСѓ РЅРѕРјРµСЂСѓ РјРѕР¶РЅРѕ СѓР·РЅР°С‚СЊ СЃС‚Р°С‚СѓСЃ С‡РµСЂРµР· Telegram-Р±РѕС‚Р°.</span>
+          <div class="apply-telegram-card">
+            <div class="apply-telegram-info">
+              <span class="apply-telegram-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M21.7 4.2 18.4 20c-.2.9-.8 1.1-1.6.7l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9-8.1c.4-.4-.1-.6-.6-.2L6.2 13.5 1.4 12c-.9-.3-.9-1 0-1.3L20.1 3.5c.8-.3 1.7.2 1.6.7Z" />
+                </svg>
+              </span>
+              <span>РўРµР»РµРіСЂР°Рј РєР°РЅР°Р» С‚СѓСЂРЅРёСЂР°</span>
+            </div>
+            <a class="button-secondary apply-telegram-link" href="{{.Profile.TelegramURL}}" target="_blank" rel="noopener noreferrer">РџРµСЂРµР№С‚Рё</a>
+          </div>
+          {{end}}
+          {{if .CanOpenCabinet}}
+          <a class="button" href="/cabinet">РћС‚РєСЂС‹С‚СЊ Р»РёС‡РЅС‹Р№ РєР°Р±РёРЅРµС‚</a>
+          {{else if eq .ApplicationStatus "approved"}}
+          <a class="button" href="/login">Р’РѕР№С‚Рё РІ РєР°Р±РёРЅРµС‚</a>
+          {{end}}
+        </div>
+        {{else}}
+        {{if .ApplicationsClosed}}
+        <div class="apply-status-box">
+          <strong>РџРѕРґР°С‡Р° Р·Р°СЏРІРѕРє Р·Р°РєСЂС‹С‚Р°</strong>
+          <span>РџСЂРёРµРј Р·Р°СЏРІРѕРє РЅР° СѓС‡Р°СЃС‚РёРµ РІ С‚СѓСЂРЅРёСЂРµ РІСЂРµРјРµРЅРЅРѕ Р·Р°РІРµСЂС€РµРЅ. РЎР»РµРґРёС‚Рµ Р·Р° РЅРѕРІРѕСЃС‚СЏРјРё!</span>
+          <a class="button" href="/">РќР° РіР»Р°РІРЅСѓСЋ</a>
+        </div>
+        {{else}}
+        {{if eq .ApplicationStatus "rejected"}}
+        <p class="message error">{{.StatusText}}</p>
+        {{end}}
+        <form class="apply-form" method="post" action="/apply">
+          <input type="hidden" name="ref" value="{{.Referral}}" />
+
+          <label>
+            <span>Twitch-Р°РєРєР°СѓРЅС‚</span>
+            <input class="text-input" type="text" name="twitch_login" placeholder="РќР°Р·РІР°РЅРёРµ РєР°РЅР°Р»Р°" autocomplete="off" required value="{{.TwitchLogin}}" />
+          </label>
+
+          <label>
+            <span>Discord username</span>
+            <input class="text-input" type="text" name="discord_username" placeholder="РРјСЏ Р°РєРєР°СѓРЅС‚Р°" autocomplete="off" required />
+          </label>
+
+          <label>
+            <span>РЎСЃС‹Р»РєР° РЅР° Twitch-РєР°РЅР°Р»</span>
+            <input class="text-input" type="url" name="twitch_channel_url" placeholder="https://www.twitch.tv/username" value="{{.TwitchChannelURL}}" />
+          </label>
+
+          <label>
+            <span>Р§Р°СЃРѕРІРѕР№ РїРѕСЏСЃ</span>
+            <input class="text-input" type="text" name="timezone" placeholder="Europe/Moscow РёР»Рё UTC+3" autocomplete="off" required />
+          </label>
+
+          <label class="apply-check">
+            <input type="checkbox" name="understands_stream_required" value="1" required />
+            <span>РЇ РїРѕРЅРёРјР°СЋ, С‡С‚Рѕ Р·Р°Р±РµРіРё Р·Р°СЃС‡РёС‚С‹РІР°СЋС‚СЃСЏ С‚РѕР»СЊРєРѕ СЃРѕ СЃС‚СЂРёРјРѕРј</span>
+          </label>
+
+          <button class="button" type="submit" disabled>РћС‚РїСЂР°РІРёС‚СЊ Р·Р°СЏРІРєСѓ</button>
+          <p class="consent-note">РќР°Р¶РёРјР°СЏ В«РћС‚РїСЂР°РІРёС‚СЊ Р·Р°СЏРІРєСѓВ», РІС‹ СЃРѕРіР»Р°С€Р°РµС‚РµСЃСЊ, С‡С‚Рѕ СѓРєР°Р·Р°РЅРЅС‹Рµ Twitch, Discord Рё С‡Р°СЃРѕРІРѕР№ РїРѕСЏСЃ Р±СѓРґСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°РЅС‹ РґР»СЏ РїСЂРѕРІРµРґРµРЅРёСЏ С‚СѓСЂРЅРёСЂР°, РїСЂРѕРІРµСЂРєРё Р·Р°СЏРІРєРё Рё СЃРІСЏР·Рё РїРѕ СѓС‡Р°СЃС‚РёСЋ.</p>
+        </form>
+        {{end}}
+        {{end}}
+      </section>
+      </div>
+    </main>
+    <p class="site-footer-disclaimer">NOT AN OFFICIAL MINECRAFT SERVICE. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</p>
+  </body>
+</html>

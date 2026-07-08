@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "minecraft_speedrun_timer",
+  "version": "${version}",
+  "name": "Tournament Timer",
+  "description": "Dual speedrun timers with cabinet authorization and automatic dragon record submission.",
+  "authors": [
+    "OpenAI Codex"
+  ],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.codex.speedrun.timer.MinecraftSpeedrunModClient"
+    ]
+  },
+  "mixins": [
+    "minecraft-speedrun-timer.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

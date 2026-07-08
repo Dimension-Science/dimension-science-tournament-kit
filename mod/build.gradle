@@ -1,0 +1,186 @@
+plugins {
+    id "fabric-loom" version "${loom_version}"
+    id "maven-publish"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+def modrinthVersionType = providers.provider {
+    project.version.toString().contains("-beta.") ? "Beta" : "Release"
+}
+
+def modrinthVersionTitle = providers.provider {
+    def versionName = project.version.toString()
+    def displayVersion = versionName.contains("-beta.")
+        ? versionName.replaceFirst(/-beta\.(.+)$/, " beta v\$1")
+        : "${versionName} release"
+    "${project.archives_base_name} ${displayVersion}"
+}
+
+base {
+    archivesName = project.archives_base_name
+}
+
+def tournamentBuildConfigDir = layout.buildDirectory.dir("generated/sources/tournamentBuildConfig/java")
+def requiredPropertyOrEnv = { name ->
+    providers.provider {
+        def propertyValue = project.findProperty(name)
+        if (propertyValue != null) {
+            return propertyValue.toString().trim()
+        }
+        def envValue = System.getenv(name)
+        if (envValue != null && !envValue.trim().isEmpty()) {
+            return envValue.trim()
+        }
+        // Try reading from ../.env file
+        def envFile = new File(project.rootDir, "../.env")
+        if (envFile.exists()) {
+            def prefix = name
+            if (name == "TOURNAMENT_MOD_API_KEY") {
+                prefix = "MOD_API_KEY"
+            } else if (name == "TOURNAMENT_MOD_SIGNING_SECRET") {
+                prefix = "MOD_SIGNING_SECRET"
+            }
+            def line = envFile.readLines().find { it.startsWith(prefix + "=") }
+            if (line != null) {
+                return line.split("=", 2)[1].trim()
+            }
+        }
+        return ""
+    }
+}
+def tournamentModApiKey = requiredPropertyOrEnv("TOURNAMENT_MOD_API_KEY")
+def tournamentModSigningSecret = requiredPropertyOrEnv("TOURNAMENT_MOD_SIGNING_SECRET")
+def tournamentBaseUrl = requiredPropertyOrEnv("APP_BASE_URL")
+def allowDummyBuildSecrets = providers.provider {
+    def propertyValue = project.findProperty("TOURNAMENT_ALLOW_DUMMY_BUILD")
+    def value = propertyValue != null ? propertyValue.toString() : System.getenv("TOURNAMENT_ALLOW_DUMMY_BUILD")
+    if (value != null && !value.trim().isEmpty()) {
+        return value.trim().equalsIgnoreCase("true")
+    }
+    def envFile = new File(project.rootDir, "../.env")
+    if (envFile.exists()) {
+        def line = envFile.readLines().find { it.startsWith("TOURNAMENT_ALLOW_DUMMY_BUILD=") }
+        if (line == null) {
+            line = envFile.readLines().find { it.startsWith("ALLOW_DEV_MOCK_AUTH=") }
+        }
+        if (line != null) {
+            return line.split("=", 2)[1].trim().equalsIgnoreCase("true")
+        }
+    }
+    return false
+}
+def javaString = { value ->
+    value
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = "https://maven.fabricmc.net/"
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings "net.fabricmc:yarn:${yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        "minecraft_speedrun_timer" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+sourceSets {
+    client {
+        java.srcDir(tournamentBuildConfigDir)
+    }
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+tasks.register("generateTournamentBuildConfig") {
+    inputs.property("modApiKey", tournamentModApiKey)
+    inputs.property("modSigningSecret", tournamentModSigningSecret)
+    inputs.property("baseUrl", tournamentBaseUrl)
+    inputs.property("allowDummyBuildSecrets", allowDummyBuildSecrets)
+    outputs.dir(tournamentBuildConfigDir)
+
+    doLast {
+        if (tournamentModApiKey.get().isBlank() || tournamentModSigningSecret.get().isBlank()) {
+            throw new GradleException("TOURNAMENT_MOD_API_KEY and TOURNAMENT_MOD_SIGNING_SECRET are required for every mod build.")
+        }
+        if (!allowDummyBuildSecrets.get() && (tournamentModApiKey.get() == "local_build_check" || tournamentModSigningSecret.get() == "local_build_check_secret")) {
+            throw new GradleException("Dummy Tournament mod signing secrets are only allowed with TOURNAMENT_ALLOW_DUMMY_BUILD=true.")
+        }
+        def outputDir = tournamentBuildConfigDir.get().asFile
+        def packageDir = new File(outputDir, "dev/codex/speedrun/timer")
+        packageDir.mkdirs()
+        new File(packageDir, "ModBuildConfig.java").text = """package dev.codex.speedrun.timer;
+
+final class ModBuildConfig {
+    static final String MOD_API_KEY = "${javaString(tournamentModApiKey.get())}";
+    static final String MOD_SIGNING_SECRET = "${javaString(tournamentModSigningSecret.get())}";
+    static final String DEFAULT_BASE_URL = "${javaString(tournamentBaseUrl.get().isBlank() ? "http://localhost:3000" : tournamentBaseUrl.get())}";
+    static final boolean DEV_MODE = ${allowDummyBuildSecrets.get()};
+
+    private ModBuildConfig() {
+    }
+}
+"""
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+}
+
+tasks.named("compileClientJava") {
+    dependsOn tasks.named("generateTournamentBuildConfig")
+}
+
+tasks.named("sourcesJar") {
+    dependsOn tasks.named("generateTournamentBuildConfig")
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.register("printModrinthVersion") {
+    group = "publishing"
+    description = "Prints the Modrinth title and version type for the current mod build."
+
+    doLast {
+        println "Modrinth title: ${modrinthVersionTitle.get()}"
+        println "Modrinth version type: ${modrinthVersionType.get()}"
+        if (modrinthVersionType.get() == "Release") {
+            println "Release reminder: publish as Release only after your tournament owner approves it."
+        }
+    }
+}
+
+
+
+
+

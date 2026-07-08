@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>РљР°Рє СѓС‡Р°СЃС‚РІРѕРІР°С‚СЊ - {{.Profile.ShortName}}</title>
+  </head>
+  <body>
+    <main class="info-page how-participate-page">
+      <section class="about-hero">
+        <div class="about-title-row">
+          <h1>РљР°Рє СѓС‡Р°СЃС‚РІРѕРІР°С‚СЊ</h1>
+          <a class="button-secondary about-home-link" href="/">Р’РµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ</a>
+        </div>
+        <p class="muted">РљРѕСЂРѕС‚РєРёР№ РїСѓС‚СЊ РѕС‚ Р·Р°СЏРІРєРё РґРѕ РїРµСЂРІРѕРіРѕ Р·Р°Р±РµРіР°.</p>
+      </section>
+
+      <section class="participation-steps" aria-label="РљР°Рє СѓС‡Р°СЃС‚РІРѕРІР°С‚СЊ РІ {{.Profile.ShortName}}">
+        <article class="participation-step">
+          <span>1</span>
+          <div>
+            <h2>РџРѕРґР°Р№ Р·Р°СЏРІРєСѓ</h2>
+            <p>Р—Р°РїРѕР»РЅРё С„РѕСЂРјСѓ СѓС‡Р°СЃС‚РЅРёРєР°: Twitch-Р°РєРєР°СѓРЅС‚, Discord, СЃСЃС‹Р»РєСѓ РЅР° Twitch-РєР°РЅР°Р» Рё С‡Р°СЃРѕРІРѕР№ РїРѕСЏСЃ.</p>
+          </div>
+        </article>
+
+        <article class="participation-step">
+          <span>2</span>
+          <div>
+            <h2>Р”РѕР¶РґРёСЃСЊ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ</h2>
+            <p>РџРѕСЃР»Рµ РїСЂРѕРІРµСЂРєРё Р·Р°СЏРІРєРё С‚С‹ РїРѕР»СѓС‡РёС€СЊ РґРѕСЃС‚СѓРї Рє СѓС‡Р°СЃС‚РёСЋ Рё СЃРјРѕР¶РµС€СЊ СЃР»РµРґРёС‚СЊ Р·Р° РЅРѕРІРѕСЃС‚СЏРјРё С‚СѓСЂРЅРёСЂР° РІ Discord/Telegram.</p>
+          </div>
+        </article>
+
+        <article class="participation-step">
+          <span>3</span>
+          <div>
+            <h2>РЎС‚Р°СЂС‚СѓР№ 5 РёСЋРЅСЏ</h2>
+            <p>5 РёСЋРЅСЏ РЅР°С‡РЅС‘С‚СЃСЏ РєРІР°Р»РёС„РёРєР°С†РёСЏ Рё РЅР° СЃР°Р№С‚Рµ РїРѕСЏРІРёС‚СЃСЏ РѕС„РёС†РёР°Р»СЊРЅС‹Р№ РјРѕРґ РґР»СЏ {{.Profile.GameName}} {{.Profile.GameVersion}}. РЎРєРѕРїРёСЂСѓР№ С‚РѕРєРµРЅ РёР· РєР°Р±РёРЅРµС‚Р°, РІСЃС‚Р°РІСЊ РµРіРѕ РІ СЌРєСЂР°РЅ В«РўРѕРєРµРЅ РјРѕРґР°В» РІ {{.Profile.GameName}} {{.Profile.GameVersion}} Рё СЃРѕС…СЂР°РЅРё. РџРѕСЃР»Рµ СЌС‚РѕРіРѕ РјРѕРґ Р±СѓРґРµС‚ РїРѕРєР°Р·С‹РІР°С‚СЊ С‚Р°Р№РјРµСЂ, С„РёРєСЃРёСЂРѕРІР°С‚СЊ СЃРїР»РёС‚С‹: РћРІРµСЂ -> РќРµР·РµСЂ, РќРµР·РµСЂ -> Р­РЅРґ, СѓР±РёР№СЃС‚РІРѕ РґСЂР°РєРѕРЅР°, Рё РѕС‚РїСЂР°РІР»СЏС‚СЊ СѓСЃРїРµС€РЅС‹Р№ Р·Р°Р±РµРі РІ С‚РІРѕР№ РїСЂРѕС„РёР»СЊ.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="participation-note">
+        <strong>Р’Р°Р¶РЅРѕ:</strong>
+        <p>РўРѕРєРµРЅ РЅРµ РЅСѓР¶РЅРѕ РѕС‚РїСЂР°РІР»СЏС‚СЊ РѕСЂРіР°РЅРёР·Р°С‚РѕСЂР°Рј РёР»Рё РґСЂСѓРіРёРј СѓС‡Р°СЃС‚РЅРёРєР°Рј. Р—Р°Р±РµРіРё Р·Р°СЃС‡РёС‚С‹РІР°СЋС‚СЃСЏ С‚РѕР»СЊРєРѕ РІРѕ РІСЂРµРјСЏ Р°РєС‚РёРІРЅРѕР№ С‚СЂР°РЅСЃР»СЏС†РёРё, Р° Р·Р°РїРёСЃСЊ СЃС‚СЂРёРјР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РґРѕСЃС‚СѓРїРЅР° РґР»СЏ РїСЂРѕРІРµСЂРєРё.</p>
+      </section>
+
+      <div class="how-participate-actions">
+        {{if not .ApplicationsClosed}}
+        <a class="button" href="/apply">РџРѕРґР°С‚СЊ Р·Р°СЏРІРєСѓ</a>
+        {{else}}
+        <a class="button" href="/login">Р’РѕР№С‚Рё РІ РєР°Р±РёРЅРµС‚</a>
+        {{end}}
+        <a class="button-secondary" href="{{.Profile.SupportURL}}" target="_blank" rel="noopener noreferrer">РџСЂРѕРІРµСЂРёС‚СЊ Р·Р°СЏРІРєСѓ</a>
+      </div>
+    </main>
+    <p class="site-footer-disclaimer">NOT AN OFFICIAL MINECRAFT SERVICE. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</p>
+  </body>
+</html>

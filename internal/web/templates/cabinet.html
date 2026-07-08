@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}}</title>
+  </head>
+  <body>
+    <main class="container cabinet-shell-v3">
+      
+      {{if .Error}}
+      <p class="message error" style="margin-bottom: var(--space-4);">{{.Error}}</p>
+      {{end}}
+      {{if and .Message (ne .OKCode "mod_token_rotated")}}
+      <p class="message success" style="margin-bottom: var(--space-4);">{{.Message}}</p>
+      {{end}}
+
+      <div class="cabinet-layout-v3">
+        
+        <!-- Row 1: Header / Profile Info + Nav Actions -->
+        <header class="cabinet-header">
+          <div class="profile-brief">
+            <div class="profile-avatar-wrapper">
+              <img class="avatar-v3" src="{{.AvatarURL}}" alt="avatar" data-avatar-image />
+              <form method="post" action="/cabinet/avatar" enctype="multipart/form-data" class="avatar-upload-form-v3" data-avatar-form>
+                <input id="avatar_file" class="avatar-file-input" type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" data-avatar-input />
+                <label class="avatar-edit-btn-v3" for="avatar_file" data-avatar-trigger>Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</label>
+              </form>
+            </div>
+            
+            <div class="profile-text-v3">
+              <div class="profile-name-row">
+                <h1>{{.StreamerName}}</h1>
+                <div class="stream-badge-v3 {{if .StreamOnline}}is-live{{else}}is-offline{{end}}" aria-label="{{if .StreamOnline}}РћРЅР»Р°Р№РЅ{{else}}РќРµ РѕРЅР»Р°Р№РЅ{{end}}" tabindex="0">
+                  <svg viewBox="0 0 24 24" class="twitch-icon" aria-hidden="true">
+                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
+                  </svg>
+                  <span>{{if .StreamOnline}}РћРЅР»Р°Р№РЅ{{else}}РќРµ РѕРЅР»Р°Р№РЅ{{end}}</span>
+                </div>
+              </div>
+              
+              <form method="post" action="/cabinet/profile" class="nick-line-form" data-nick-form>
+                <span class="nick-inline-display" data-nick-display>{{if .MinecraftNick}}{{.MinecraftNick}}{{else}}{{.Claims.TwitchLogin}}{{end}}</span>
+                <input id="minecraft_nick" class="text-input nick-inline-input" type="text" maxlength="16" name="minecraft_nick" value="{{if .MinecraftNick}}{{.MinecraftNick}}{{else}}{{.Claims.TwitchLogin}}{{end}}" data-nick-input />
+                <button class="icon-button nick-inline-toggle" type="button" aria-label="Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РЅРёРє" data-nick-toggle>
+                  <svg class="icon-pencil" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 20h4.75L19 9.75 14.25 5 4 15.25V20Zm2-1.5v-2.63l8.25-8.24 2.62 2.62-8.24 8.25H6Zm11.71-10.54 1.04-1.04a1.5 1.5 0 0 0 0-2.12l-.55-.55a1.5 1.5 0 0 0-2.12 0l-1.04 1.04 2.67 2.67Z" />
+                  </svg>
+                  <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9.55 18.2 4.8 13.45l1.4-1.4 3.35 3.35 8.25-8.25 1.4 1.4Z" />
+                  </svg>
+                </button>
+              </form>
+              
+              <p class="cabinet-subtext">Р”Р»СЏ РёРіСЂС‹ РІР°Рј РЅСѓР¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊ С‚РѕРєРµРЅ Рё РІСЃС‚Р°РІРёС‚СЊ РµРіРѕ РІ РёРіСЂСѓ.</p>
+              <p class="cabinet-subtext">РўРѕРєРµРЅ РјРѕР¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊ РЅРёР¶Рµ</p>
+            </div>
+          </div>
+          
+          <div class="cabinet-actions-v3">
+            <button class="button-outline-v3" type="button" data-event-badges-open>
+              Р’Р°С€РёРј Р·СЂРёС‚РµР»СЏРј
+            </button>
+            
+            <a class="nav-icon-btn-v3" href="/" aria-label="Р’РµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ" title="Р’РµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M22 10V11H19V21H18V22H14V15H8V22H4V21H3V11H0V10H1V9H2V8H3V7H4V6H5V5H6V4H7V3H8V2H9V1H10V0H12V1H13V2H14V3H15V4H16V5H17V6H18V7H19V8H20V9H21V10H22Z" fill="currentColor"/>
+              </svg>
+            </a>
+
+            {{if .IsAdmin}}
+            <a class="nav-icon-btn-v3" href="/admin" aria-label="РђРґРјРёРЅ-РїР°РЅРµР»СЊ" title="РђРґРјРёРЅ-РїР°РЅРµР»СЊ">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19.4 13.5c.08-.48.1-.98.1-1.5s-.02-1.02-.1-1.5l2.05-1.58-2-3.46-2.42.98a7.85 7.85 0 0 0-2.6-1.5L14.05 2h-4.1l-.38 2.94a7.85 7.85 0 0 0-2.6 1.5l-2.42-.98-2 3.46L4.6 10.5c-.08.48-.1.98-.1 1.5s.02 1.02.1 1.5l-2.05 1.58 2 3.46 2.42-.98a7.85 7.85 0 0 0 2.6 1.5l.38 2.94h4.1l.38-2.94a7.85 7.85 0 0 0 2.6-1.5l2.42.98 2-3.46-2.05-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" />
+              </svg>
+            </a>
+            {{end}}
+
+            <form method="post" action="/auth/logout" style="display: inline-block; margin: 0;">
+              <button class="nav-icon-btn-v3" type="submit" aria-label="Р’С‹Р№С‚Рё" title="Р’С‹Р№С‚Рё">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M14 4H16V5H17V6H18V7H19V8H20V9H21V10H22V11H23V13H22V14H21V15H20V16H19V17H18V18H17V19H16V20H14V18H15V17H16V16H17V15H18V14H19V13H7V11H19V10H18V9H17V8H16V7H15V6H14V4Z" fill="currentColor"/>
+                  <path d="M3 2H1V22H3V2Z" fill="currentColor"/>
+                </svg>
+              </button>
+            </form>
+          </div>
+        </header>
+
+        <!-- Row 2: Performance + Achievements -->
+        <div class="cabinet-performance-row">
+          <!-- Left: Best Time & Splits -->
+          <div class="best-time-card-v3">
+            <p class="metric-label-v3">Р›СѓС‡С€РµРµ РІСЂРµРјСЏ:</p>
+            <div class="best-time-display-v3">{{if .BestTimeMS}}{{formatDuration .BestTimeMS}}{{else}}-{{end}}</div>
+
+            {{if .CertificateAvailable}}
+            <div class="certificate-section-v3" style="margin-top: var(--space-2); padding: var(--space-4); background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start;">
+              <p class="metric-label-v3" style="margin: 0;">Р’Р°С€ СЃРµСЂС‚РёС„РёРєР°С‚:</p>
+              <div class="certificate-status-text" style="font-size: 1.25rem; font-weight: bold; color: var(--accent); margin-bottom: var(--space-1);">{{.CertificateStatus}}</div>
+              <a class="button-purple-v3" href="/cabinet/certificate" download="certificate.png" style="text-decoration: none; width: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 24px; min-width: 200px;">
+                <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18" style="fill: currentColor;">
+                  <path d="M5 20h14v-2H5v2Zm7-18L5.33 9h4V15h5.33V9h4L12 2Z"/>
+                </svg>
+                РЎРєР°С‡Р°С‚СЊ СЃРµСЂС‚РёС„РёРєР°С‚
+              </a>
+            </div>
+            {{end}}
+            
+            <div class="splits-list-v3">
+              {{range .SplitRows}}
+              <div class="split-item-v3">
+                <span class="split-label-v3">{{.Label}}</span>
+                <strong class="split-value-v3">{{if .Value}}{{formatDuration .Value}}{{else}}-{{end}}</strong>
+              </div>
+              {{end}}
+            </div>
+          </div>
+          
+          <!-- Right: Achievements Summary -->
+          <div class="achievements-card-v3">
+            <p class="metric-label-v3">РњРѕРё РґРѕСЃС‚РёР¶РµРЅРёСЏ:</p>
+            
+            <div class="achievements-meter-wrapper-v3">
+              <progress class="achievement-meter-v3" max="100" value="{{.AchievementSummary.Percent}}" aria-label="РџСЂРѕРіСЂРµСЃСЃ РґРѕСЃС‚РёР¶РµРЅРёР№ {{.AchievementSummary.Percent}}%"></progress>
+            </div>
+
+            <div class="achievement-icons-v3">
+              {{range .AchievementSummary.UnlockedPreview}}
+              <span class="achievement-icon-v3 achievement-icon-{{.Slug}}" title="{{.Name}}" aria-label="{{.Name}}"></span>
+              {{end}}
+              {{range .AchievementSummary.LockedPreview}}
+              <span class="achievement-icon-v3 achievement-icon-{{.Slug}} is-locked" title="{{.Name}}" aria-label="{{.Name}}"></span>
+              {{end}}
+            </div>
+
+            <div class="more-details-row-v3">
+              <button class="more-details-btn-v3" type="button" data-achievements-open>РџРѕРґСЂРѕР±РЅРµРµ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Token + Mod download + Stream permissions -->
+        <div class="cabinet-bottom-row">
+          <!-- Col 1: Token -->
+          <div class="bottom-card-v3">
+            <h3>Р’Р°С€ СѓРЅРёРєР°Р»СЊРЅС‹Р№ С‚РѕРєРµРЅ:</h3>
+            <div class="token-field-v3">
+              <input class="token-input-v3 {{if not .NewModToken}}is-placeholder{{end}}" type="text" value="{{if .NewModToken}}{{.NewModToken}}{{else}}{{.TokenDisplay}}{{end}}" readonly data-token-input data-has-full-token="{{if .NewModToken}}true{{else}}false{{end}}" aria-label="РЈРЅРёРєР°Р»СЊРЅС‹Р№ С‚РѕРєРµРЅ" title="{{if .NewModToken}}РќР°Р¶РјРёС‚Рµ, С‡С‚РѕР±С‹ РїРѕРєР°Р·Р°С‚СЊ С‚РѕРєРµРЅ{{else}}РџРѕР»РЅС‹Р№ С‚РѕРєРµРЅ РїРѕРєР°Р·С‹РІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ РѕР±РЅРѕРІР»РµРЅРёСЏ{{end}}" />
+              <button class="token-action-btn-v3" type="button" aria-label="РЎРєРѕРїРёСЂРѕРІР°С‚СЊ С‚РѕРєРµРЅ" data-token-copy {{if not .NewModToken}}disabled{{end}}>
+                <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
+                  <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+              </button>
+              <form method="post" action="/cabinet/mod-token" style="display: inline-block; margin: 0;">
+                <button class="token-action-btn-v3" type="submit" aria-label="РћР±РЅРѕРІРёС‚СЊ С‚РѕРєРµРЅ">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
+                    <path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+            <p class="token-status-v3" data-token-copy-status hidden>вњ“ РЎРєРѕРїРёСЂРѕРІР°РЅРѕ</p>
+            <p class="consent-note-v3">
+              {{if .NewModToken}}
+              РЎРєРѕРїРёСЂСѓР№С‚Рµ С‚РѕРєРµРЅ Рё РІСЃС‚Р°РІСЊС‚Рµ РµРіРѕ РІ РЅР°СЃС‚СЂРѕР№РєРё РјРѕРґР° РІ РёРіСЂРµ ({{.Profile.GameName}} {{.Profile.GameVersion}}).
+              {{else if .HasModToken}}
+              РЎРµР№С‡Р°СЃ СЃРѕС…СЂР°РЅРµРЅ С‚РѕРєРµРЅ {{.TokenPreview}} (РґР»СЏ {{.Profile.GameName}} {{.Profile.GameVersion}}).
+              {{end}}
+              РџРµСЂРµРґ Р·Р°Р±РµРіРѕРј РїСЂРѕРІРµСЂСЊС‚Рµ РІ РёРіСЂРµ, С‡С‚Рѕ РјРѕРґ РїСЂРёРЅСЏР» С‚РѕРєРµРЅ. Р•СЃР»Рё С‚РѕРєРµРЅ РЅРµРґРµР№СЃС‚РІРёС‚РµР»РµРЅ, РЅР°Р¶РјРёС‚Рµ в†».
+            </p>
+          </div>
+
+          <!-- Col 2: Mod -->
+          <div class="bottom-card-v3">
+            <h3>РњРѕРґ РґР»СЏ Р·Р°Р±РµРіР°:</h3>
+            <a class="button-purple-v3" href="#" target="_blank" rel="noopener noreferrer">
+              РЎРєР°С‡Р°С‚СЊ СЃ Modrinth
+            </a>
+          </div>
+
+          <!-- Col 3: Stream Optin / Permissions -->
+          <div class="bottom-card-v3">
+            <h3>РўСЂР°РЅСЃР»СЏС†РёСЏ РЅР° Twitch:</h3>
+            <form method="post" action="/cabinet/now-playing" class="now-playing-form-v3" data-now-playing-form>
+              <a class="button-purple-v3 {{if or .NowPlayingAuthorized (not .ShowInNowPlaying)}}is-disabled{{end}}" 
+                 href="{{if or .NowPlayingAuthorized (not .ShowInNowPlaying)}}javascript:void(0){{else}}/api/auth/twitch/start?purpose=now-playing{{end}}" 
+                 data-now-playing-permission 
+                 data-authorized="{{if .NowPlayingAuthorized}}true{{else}}false{{end}}">
+                Р’С‹РґР°С‚СЊ СЂР°Р·СЂРµС€РµРЅРёРµ
+              </a>
+
+              <label class="checkbox-line-v3">
+                <input type="checkbox" name="show_in_now_playing" value="1" {{if .ShowInNowPlaying}}checked{{end}} data-now-playing-checkbox />
+                <span>РџРѕРєР°Р·С‹РІР°С‚СЊ РІ вЂњРЎРµР№С‡Р°СЃ РёРіСЂР°СЋС‚вЂќ</span>
+              </label>
+              
+              {{if .NowPlayingAuthorized}}
+              <span class="authorized-status-v3">Р Р°Р·СЂРµС€РµРЅРёРµ Twitch РїРѕРґРєР»СЋС‡РµРЅРѕ</span>
+              {{end}}
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Overlays / Modals -->
+    <section class="achievements-modal" aria-labelledby="achievements-modal-title" aria-modal="true" role="dialog" data-achievements-modal hidden>
+      <div class="achievements-modal-backdrop" data-achievements-close></div>
+      <div class="achievements-modal-panel">
+        <button class="achievement-close-button" type="button" aria-label="Р—Р°РєСЂС‹С‚СЊ РґРѕСЃС‚РёР¶РµРЅРёСЏ" data-achievements-close>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6.4 18.65-1.05-1.05L10.95 12 5.35 6.4 6.4 5.35 12 10.95l5.6-5.6 1.05 1.05-5.6 5.6 5.6 5.6-1.05 1.05-5.6-5.6-5.6 5.6Z" />
+          </svg>
+        </button>
+        <div class="achievements-modal-hero">
+          <h2 id="achievements-modal-title">РњРѕРё РґРѕСЃС‚РёР¶РµРЅРёСЏ</h2>
+          <div class="achievement-summary-count">
+            <span>РџРѕР»СѓС‡РµРЅРѕ {{.AchievementSummary.UnlockedCount}} РёР· {{.AchievementSummary.TotalCount}}</span>
+            <strong>{{.AchievementSummary.Percent}}%</strong>
+          </div>
+          <progress class="achievement-meter" max="100" value="{{.AchievementSummary.Percent}}" aria-label="РџСЂРѕРіСЂРµСЃСЃ РґРѕСЃС‚РёР¶РµРЅРёР№ {{.AchievementSummary.Percent}}%"></progress>
+        </div>
+
+        <div class="achievements-modal-list">
+          {{range .Achievements}}
+          <article class="achievement-list-row {{if .Unlocked}}is-unlocked{{else}}is-locked{{end}}">
+            <span class="achievement-icon achievement-icon-{{.Slug}} {{if not .Unlocked}}is-locked{{end}}" aria-hidden="true"></span>
+            <div class="achievement-list-copy">
+              <h3>{{.Name}}</h3>
+              <p>{{.Description}}</p>
+              <progress class="achievement-row-meter" max="100" value="{{.Percent}}" aria-label="РџСЂРѕРіСЂРµСЃСЃ РґРѕСЃС‚РёР¶РµРЅРёСЏ {{.Percent}}%"></progress>
+              <small>{{.Progress}} РёР· {{.Goal}}</small>
+            </div>
+            <div class="achievement-list-state">
+              {{if .UnlockedAt}}
+              <span>РџРѕР»СѓС‡РµРЅРѕ {{formatDateTime .UnlockedAt}}</span>
+              {{else}}
+              <strong>{{.Percent}}%</strong>
+              {{end}}
+            </div>
+          </article>
+          {{end}}
+        </div>
+      </div>
+    </section>
+
+    <section class="event-badges-modal" aria-labelledby="event-badges-modal-title" aria-modal="true" role="dialog" data-event-badges-modal hidden>
+      <div class="event-badges-backdrop" data-event-badges-close></div>
+      <div class="event-badges-panel">
+        <button class="achievement-close-button event-badges-close-button" type="button" aria-label="Р—Р°РєСЂС‹С‚СЊ РѕРЅР±РѕСЂРґРёРЅРі" data-event-badges-close>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6.4 18.65-1.05-1.05L10.95 12 5.35 6.4 6.4 5.35 12 10.95l5.6-5.6 1.05 1.05-5.6 5.6 5.6 5.6-1.05 1.05-5.6-5.6-5.6 5.6Z" />
+          </svg>
+        </button>
+
+        <div class="event-badges-hero">
+          <p class="event-badges-eyebrow">РћРЅР±РѕСЂРґРёРЅРі</p>
+          <h2 id="event-badges-modal-title">РРІРµРЅС‚ РґР»СЏ С‡Р°С‚Р°</h2>
+          <p>Р—Р°РіСЂСѓР·РёС‚Рµ РґРІР° Р·РЅР°С‡РєР° РІ СЃРѕР±С‹С‚РёРµ РєР°РЅР°Р»Р°: РѕРґРёРЅ Р·Р° РїРѕРґРїРёСЃРєРё, РІС‚РѕСЂРѕР№ Р·Р° РІСЂРµРјСЏ РїСЂРѕСЃРјРѕС‚СЂР°.</p>
+        </div>
+
+        <div class="event-badges-info">
+          <strong>Р§С‚Рѕ СЌС‚Рѕ Р·Р° Р·РЅР°С‡РєРё</strong>
+          <p>РќР°РіСЂР°РґРёС‚Рµ СЃРІРѕРёС… Р·СЂРёС‚РµР»РµР№ Р·РЅР°С‡РєРѕРј РІ С‡РµСЃС‚СЊ РІР°С€РµРіРѕ СЃР»РµРґСѓСЋС‰РµРіРѕ СЃРѕР±С‹С‚РёСЏ. РљРѕРіРґР° Р·СЂРёС‚РµР»СЊ РІС‹РїРѕР»РЅРёС‚ СѓСЃР»РѕРІРёСЏ РїРѕ РґР°СЂРµРЅРёСЋ РёР»Рё РѕС„РѕСЂРјР»РµРЅРёСЋ РїРѕРґРїРёСЃРѕРє Р»РёР±Рѕ РЅСѓР¶РЅРѕРјСѓ РІСЂРµРјРµРЅРё РїСЂРѕСЃРјРѕС‚СЂР°, Р·РЅР°С‡РѕРє Р±СѓРґРµС‚ РІС‹РґР°РЅ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё. Р­С‚Рё Р·РЅР°С‡РєРё РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚РѕР»СЊРєРѕ РЅР° РІР°С€РµРј РєР°РЅР°Р»Рµ.</p>
+          <p>РљР°Р¶РґРѕРµ СЃРѕР±С‹С‚РёРµ РјРѕР¶РµС‚ РІРєР»СЋС‡Р°С‚СЊ Р·РЅР°С‡РѕРє Р·Р° РїРѕРґРїРёСЃРєРё Рё Р·РЅР°С‡РѕРє Р·Р° РїСЂРѕСЃРјРѕС‚СЂ. РќРѕРІРѕРµ СЃРѕР±С‹С‚РёРµ РјРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РїРѕСЃР»Рµ С‚РѕРіРѕ, РєР°Рє С‚РµРєСѓС‰РµРµ Р·Р°РІРµСЂС€РёС‚СЃСЏ РёР»Рё Р±СѓРґРµС‚ СѓРґР°Р»РµРЅРѕ.</p>
+        </div>
+
+        <div class="event-badges-grid">
+          <article class="event-badge-item">
+            <img src="/static/event-sub.png?v=20260705" alt="{{.Profile.ShortName}} Sub viewer badge" loading="lazy" />
+            <div class="event-badge-copy">
+              <h3>Р—РЅР°С‡РѕРє Р·Р° РїРѕРґРїРёСЃРєРё</h3>
+              <p>Р”Р»СЏ Р·СЂРёС‚РµР»РµР№, РєРѕС‚РѕСЂС‹Рµ РѕС„РѕСЂРјСЏС‚ РёР»Рё РїРѕРґР°СЂСЏС‚ РїРѕРґРїРёСЃРєСѓ РІРѕ РІСЂРµРјСЏ СЃРѕР±С‹С‚РёСЏ.</p>
+              <dl>
+                <dt>РќР°Р·РІР°РЅРёРµ Р·РЅР°С‡РєР°</dt>
+                <dd>{{.Profile.ShortName}} Sub viewer</dd>
+                <dt>Р§РёСЃР»Рѕ РїРѕРґРїРёСЃРѕРє</dt>
+                <dd>1 РїРѕРґРїРёСЃРєР°</dd>
+                <dt>РћРїРёСЃР°РЅРёРµ</dt>
+                <dd>Р­С‚РѕС‚ Р·РЅР°С‡РѕРє Р±С‹Р» РїРѕР»СѓС‡РµРЅ Р·Р° РѕС„РѕСЂРјР»РµРЅРёРµ РёР»Рё РґР°СЂРµРЅРёРµ РїРѕРґРїРёСЃРѕРє РІРѕ РІСЂРµРјСЏ СЃРѕР±С‹С‚РёСЏ РєР°РЅР°Р»Р°.</dd>
+              </dl>
+              <a class="event-badge-download" href="/static/event-sub.png?v=20260705" download="{{.Profile.ShortName}} SUB.png">РЎРєР°С‡Р°С‚СЊ PNG</a>
+            </div>
+          </article>
+
+          <article class="event-badge-item">
+            <img src="/static/event-watch.png?v=20260705" alt="{{.Profile.ShortName}} viewer badge" loading="lazy" />
+            <div class="event-badge-copy">
+              <h3>Р—РЅР°С‡РѕРє Р·Р° РїСЂРѕСЃРјРѕС‚СЂ</h3>
+              <p>Р”Р»СЏ Р·СЂРёС‚РµР»РµР№, РєРѕС‚РѕСЂС‹Рµ РїРѕСЃРјРѕС‚СЂСЏС‚ СЃРѕР±С‹С‚РёРµ РЅСѓР¶РЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІСЂРµРјРµРЅРё.</p>
+              <dl>
+                <dt>РќР°Р·РІР°РЅРёРµ Р·РЅР°С‡РєР°</dt>
+                <dd>{{.Profile.ShortName}} viewer</dd>
+                <dt>Р’СЂРµРјСЏ РїСЂРѕСЃРјРѕС‚СЂР°</dt>
+                <dd>1 Hour</dd>
+                <dt>РћРїРёСЃР°РЅРёРµ</dt>
+                <dd>Р­С‚РѕС‚ Р·РЅР°С‡РѕРє Р±С‹Р» РїРѕР»СѓС‡РµРЅ Р·Р° РїСЂРѕСЃРјРѕС‚СЂ СЃРѕР±С‹С‚РёСЏ РєР°РЅР°Р»Р°.</dd>
+              </dl>
+              <a class="event-badge-download" href="/static/event-watch.png?v=20260705" download="{{.Profile.ShortName}} WATCH.png">РЎРєР°С‡Р°С‚СЊ PNG</a>
+            </div>
+          </article>
+        </div>
+
+        <div class="event-badges-settings">
+          <h3>РќР°СЃС‚СЂРѕР№РєРё СЃРѕР±С‹С‚РёСЏ</h3>
+          <div class="event-badge-setting-grid">
+            <span>Р”Р°С‚Р° РЅР°С‡Р°Р»Р°</span>
+            <strong>05.07.2026</strong>
+            <span>Р’СЂРµРјСЏ РЅР°С‡Р°Р»Р° (РњРЎРљ)</span>
+            <strong>18:00</strong>
+            <span>Р”Р°С‚Р° Р·Р°РІРµСЂС€РµРЅРёСЏ</span>
+            <strong>05.07.2026</strong>
+            <span>Р’СЂРµРјСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ (РњРЎРљ)</span>
+            <strong>23:30</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    </main>
+    {{template "layout_footer" .}}
+    <script src="/static/cabinet.js?v=news-promo-v4"></script>
+  </body>
+</html>

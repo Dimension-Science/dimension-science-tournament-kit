@@ -1,0 +1,10 @@
+.git
+.gitignore
+.idea
+.tmp
+legacy
+data/uploads/*
+!data/uploads/.gitkeep
+mod/.gradle
+mod/build
+AGENTS.md

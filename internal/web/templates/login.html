@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}}</title>
+  </head>
+  <body>
+    <main class="login-layout">
+      <section class="panel login-card">
+        <div class="panel-body">
+          <p class="eyebrow">{{.TournamentTitle}}</p>
+          <h1>РђРІС‚РѕСЂРёР·Р°С†РёСЏ СЃС‚СЂРёРјРµСЂР°</h1>
+
+          {{if .Error}}
+          <p class="message error">{{.Error}}</p>
+          {{end}}
+
+          {{if .Message}}
+          <p class="message success">{{.Message}}</p>
+          {{end}}
+
+          <div class="stack">
+            <a class="button" href="/api/auth/twitch/start">Р’РѕР№С‚Рё С‡РµСЂРµР· Twitch</a>
+
+            {{if .AllowDevMockAuth}}
+            <form method="post" action="/auth/twitch/mock" class="stack">
+              <input class="text-input" type="text" name="twitch_user_id" placeholder="twitch user id (optional)" />
+              <input class="text-input" type="text" name="twitch_login" placeholder="twitch login (optional)" />
+              <button class="button-secondary" type="submit">Р’РѕР№С‚Рё С‡РµСЂРµР· dev mock</button>
+              <p class="consent-note">РќР°Р¶РёРјР°СЏ РєРЅРѕРїРєСѓ РІС…РѕРґР°, РІС‹ СЃРѕРіР»Р°С€Р°РµС‚РµСЃСЊ РЅР° РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ СѓРєР°Р·Р°РЅРЅС‹С… РґР°РЅРЅС‹С… РґР»СЏ С‚РµСЃС‚РѕРІРѕРіРѕ РїСЂРѕС„РёР»СЏ С‚СѓСЂРЅРёСЂР°.</p>
+            </form>
+
+            <div class="demo-box stack">
+              <p class="muted demo-title">Demo accounts</p>
+
+              <form method="post" action="/auth/twitch/mock">
+                <input type="hidden" name="twitch_user_id" value="streamer_1" />
+                <input type="hidden" name="twitch_login" value="microsteve" />
+                <button class="button-secondary demo-button" type="submit">Р’РѕР№С‚Рё РєР°Рє MicroSteve</button>
+              </form>
+
+              <form method="post" action="/auth/twitch/mock">
+                <input type="hidden" name="twitch_user_id" value="streamer_2" />
+                <input type="hidden" name="twitch_login" value="tinyalex" />
+                <button class="button-secondary demo-button" type="submit">Р’РѕР№С‚Рё РєР°Рє TinyAlex</button>
+              </form>
+            </div>
+            {{end}}
+
+            <a class="button-secondary" href="/">Р’РµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ</a>
+            <div class="consent-note">
+              <details>
+                <summary>* РџСЂРѕР№РґСЏ Р°РІС‚РѕСЂРёР·Р°С†РёСЋ, РІС‹ СЂР°Р·СЂРµС€Р°РµС‚Рµ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РґР°РЅРЅС‹Рµ РІР°С€РµРіРѕ Twitch-Р°РєРєР°СѓРЅС‚Р° РґР»СЏ СѓС‡Р°СЃС‚РёСЏ РІ С‚СѓСЂРЅРёСЂРµ. <span>РџРѕРґСЂРѕР±РЅРµРµ</span></summary>
+                <ul>
+                  <li>Р’Р°С€ Twitch ID, Р»РѕРіРёРЅ, РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРµ РёРјСЏ Рё Р°РІР°С‚Р°СЂ РЅСѓР¶РЅС‹ РґР»СЏ РІС…РѕРґР° Рё РїСЂРѕС„РёР»СЏ СѓС‡Р°СЃС‚РЅРёРєР°.</li>
+                  <li>РЎС‚Р°С‚СѓСЃ СЃС‚СЂРёРјР° Рё РЅР°Р·РІР°РЅРёРµ РёРіСЂС‹ РЅСѓР¶РЅС‹, С‡С‚РѕР±С‹ РїРѕРєР°Р·С‹РІР°С‚СЊ РІР°СЃ РІ Р±Р»РѕРєРµ В«РЎРµР№С‡Р°СЃ РёРіСЂР°СЋС‚В», РµСЃР»Рё РІС‹ РІРєР»СЋС‡РёС‚Рµ СЌС‚РѕС‚ РїРѕРєР°Р·.</li>
+                </ul>
+              </details>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    {{template "layout_footer" .}}
+  </body>
+</html>

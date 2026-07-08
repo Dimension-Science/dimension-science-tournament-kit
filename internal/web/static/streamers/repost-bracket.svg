@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="TOURNAMENT format">
+  <rect width="1200" height="675" fill="#10041c"/>
+  <text x="84" y="124" fill="#ffe55a" font-family="Arial, sans-serif" font-size="30" font-weight="800">Р¤РћР РњРђРў РўРЈР РќРР Рђ</text>
+  <text x="84" y="220" fill="#ffffff" font-family="Arial, sans-serif" font-size="72" font-weight="900">РљР’РђР›Р« в†’ РџР›Р•Р™-РћР¤Р¤ в†’ Р¤РРќРђР›</text>
+  <g font-family="Arial, sans-serif" font-weight="800" font-size="34" fill="#ffffff">
+    <rect x="96" y="312" width="260" height="120" rx="18" fill="#26103d" stroke="#8b5cf6"/>
+    <text x="132" y="384">14 РґРЅРµР№ РєРІР°Р»</text>
+    <rect x="470" y="312" width="260" height="120" rx="18" fill="#26103d" stroke="#8b5cf6"/>
+    <text x="525" y="384">С‚РѕРї-8</text>
+    <rect x="844" y="312" width="260" height="120" rx="18" fill="#26103d" stroke="#facc15"/>
+    <text x="928" y="384">С„РёРЅР°Р»</text>
+  </g>
+  <text x="88" y="548" fill="#d9cdef" font-family="Arial, sans-serif" font-size="32">РЎР»РµРґРё Р·Р° С‚Р°Р±Р»РёС†РµР№ Рё РјР°С‚С‡Р°РјРё РЅР° example.com</text>
+</svg>

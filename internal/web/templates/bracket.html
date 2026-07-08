@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}} вЂ” РЎРµС‚РєР°</title>
+  </head>
+  <body>
+    <main class="container">
+      <section class="info-hero bracket-hero">
+        <div class="about-title-row">
+          <div>
+            <p class="eyebrow">{{.Profile.ShortName}}</p>
+            <h1>РЎРµС‚РєР° С‚СѓСЂРЅРёСЂР°</h1>
+          </div>
+          <a class="button-secondary about-home-link" href="/">Р’РµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ</a>
+        </div>
+      </section>
+
+      <section class="panel tournament-status-panel">
+        <div class="panel-body tournament-status-grid">
+          <div>
+            <p class="eyebrow">РўРµРєСѓС‰РёР№ СЌС‚Р°Рї</p>
+            <h2>{{.Tournament.PhaseLabel}}</h2>
+            <p class="muted">{{.Tournament.PrimaryLine}}</p>
+          </div>
+          <div class="tournament-status-meta">
+            <span>РљРІР°Р»С‹: РґРѕ {{formatDateTime .Tournament.QualificationEndsAt}}</span>
+            <span>РџР»РµР№-РѕС„С„: РґРѕ {{formatDateTime .Tournament.PlayoffEndsAt}}</span>
+            <span>Р¤РёРЅР°Р»: РґРѕ {{formatDateTime .Tournament.EndsAt}}</span>
+          </div>
+        </div>
+      </section>
+
+      {{if not .Tournament.BracketOpen}}
+      <section class="panel bracket-locked-panel">
+        <div class="panel-body">
+          <h2>РЎРµС‚РєР° РїРѕРєР° Р·Р°РєСЂС‹С‚Р°</h2>
+          <p class="muted">РџРѕРєР° РёРґСѓС‚ РєРІР°Р»С‹, РјРµСЃС‚Р° СЂРµС€Р°РµС‚ С‚Р°Р±Р»РёС†Р° Р»РёРґРµСЂРѕРІ. РџРѕСЃР»Рµ РѕРєРѕРЅС‡Р°РЅРёСЏ РєРІР°Р»РёС„РёРєР°С†РёРё Р·РґРµСЃСЊ РїРѕСЏРІРёС‚СЃСЏ С‚РѕРї-8.</p>
+          <div class="bracket-locked-countdown">
+            <strong>{{.Tournament.CountdownValue}}</strong>
+            <span>{{.Tournament.CountdownLabel}}</span>
+          </div>
+          <div class="empty-state empty-state-inline">
+            <strong>{{.Tournament.CountdownDetail}}</strong>
+            <span>РЎР»РµРґРё Р·Р° С‚Р°Р±Р»РёС†РµР№: РїРѕР·РёС†РёСЏ РІ С‚РѕРї-8 РѕРїСЂРµРґРµР»СЏРµС‚ РїРѕРїР°РґР°РЅРёРµ РІ РїР»РµР№-РѕС„С„.</span>
+            <a class="site-footer-link" href="/#leaderboard">РћС‚РєСЂС‹С‚СЊ С‚Р°Р±Р»РёС†Сѓ</a>
+          </div>
+        </div>
+      </section>
+      {{else if .Rounds}}
+      <section class="bracket-board">
+        {{range .Rounds}}
+        <div class="bracket-round">
+          <h2>{{.Label}}</h2>
+          <div class="bracket-match-list">
+            {{range .Matches}}
+            <article class="bracket-match {{if eq .Status "running"}}is-live{{end}}">
+              <div class="bracket-match-topline">
+                <span>{{.StatusLabel}}</span>
+                <small>BO{{.BestOf}} В· {{formatShortDateTime .StartsAt}}</small>
+              </div>
+              <div class="bracket-player {{if and .WinnerName (eq .WinnerName .Player1Name)}}is-winner{{end}}">
+                <span><small>{{.Player1Seed}}</small>{{.Player1Name}}</span>
+                <strong>{{if .Player1BestTime}}{{formatDuration .Player1BestTime}}{{else}}-{{end}}</strong>
+              </div>
+              <div class="bracket-player {{if and .WinnerName (eq .WinnerName .Player2Name)}}is-winner{{end}}">
+                <span><small>{{.Player2Seed}}</small>{{.Player2Name}}</span>
+                <strong>{{if .Player2BestTime}}{{formatDuration .Player2BestTime}}{{else}}-{{end}}</strong>
+              </div>
+              {{if .WinnerName}}
+              <p class="bracket-winner">РџРѕР±РµР¶РґР°РµС‚: {{.WinnerName}}</p>
+              {{end}}
+            </article>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+      </section>
+      {{else}}
+      <section class="panel">
+        <div class="panel-body">
+          <h2>РЎРµС‚РєР° РµС‰Рµ РЅРµ СЃРѕР·РґР°РЅР°</h2>
+          <div class="empty-state empty-state-inline">
+            <strong>Р–РґРµРј РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ С‚РѕРї-8</strong>
+            <span>РџРѕСЃР»Рµ Р·Р°РєСЂС‹С‚РёСЏ РєРІР°Р»РёС„РёРєР°С†РёРё СЃРµС‚РєР° СЃРѕР±РµСЂРµС‚СЃСЏ РёР· РїРµСЂРІС‹С… РІРѕСЃСЊРјРё РјРµСЃС‚ С‚Р°Р±Р»РёС†С‹.</span>
+            <a class="site-footer-link" href="/#leaderboard">РџРѕСЃРјРѕС‚СЂРµС‚СЊ С‚РѕРї</a>
+          </div>
+        </div>
+      </section>
+      {{end}}
+    </main>
+    {{template "layout_footer" .}}
+  </body>
+</html>

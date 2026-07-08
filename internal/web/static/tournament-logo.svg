@@ -1,0 +1,5 @@
+<svg width="640" height="160" viewBox="0 0 640 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tournament logo placeholder">
+  <rect x="8" y="8" width="624" height="144" rx="18" fill="#151515" stroke="#f7d36a" stroke-width="8"/>
+  <path d="M78 44h44v16H94v14h24v16H94v26h-16V44Zm72 0h18l28 72h-18l-5-14h-29l-5 14h-18l29-72Zm-1 43h19l-9-26h-1l-9 26Zm58-43h16v56h35v16h-51V44Zm66 0h16v72h-16V44Zm43 0h57v16h-21v56h-16V60h-20V44Zm76 0h57v16h-41v12h35v15h-35v13h42v16h-58V44Z" fill="#f7d36a"/>
+  <path d="M492 44h38c19 0 31 11 31 28 0 12-6 21-16 25l20 19h-23l-16-16h-18v16h-16V44Zm16 16v24h20c10 0 17-4 17-12s-7-12-17-12h-20Z" fill="#f7d36a"/>
+</svg>

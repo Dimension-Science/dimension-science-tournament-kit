@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>РСЃС‚РѕСЂРёСЏ СЃРѕР±С‹С‚РёР№ - {{.Profile.ShortName}}</title>
+  </head>
+  <body>
+    <main class="info-page notifications-page">
+      <section class="about-hero">
+        <div class="about-title-row">
+          <div>
+            <p class="eyebrow">{{.Profile.SiteName}}</p>
+            <h1>РСЃС‚РѕСЂРёСЏ СЃРѕР±С‹С‚РёР№</h1>
+          </div>
+          <a class="button-secondary about-home-link" href="/">Р’РµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ</a>
+        </div>
+        <p class="muted">Р›РµРЅС‚Р° РїРѕСЃР»РµРґРЅРёС… РґРѕСЃС‚РёР¶РµРЅРёР№ Рё РѕРґРѕР±СЂРµРЅРЅС‹С… Р·Р°Р±РµРіРѕРІ СѓС‡Р°СЃС‚РЅРёРєРѕРІ С‚СѓСЂРЅРёСЂР° {{.Profile.ShortName}}.</p>
+      </section>
+
+      <section class="notifications-container">
+        {{if .Notifications}}
+        <div class="notifications-list">
+          {{range .Notifications}}
+          <article class="notification-card is-{{.EventType}}">
+            <div class="notification-avatar-col">
+              <img class="notification-avatar" src="{{if .AvatarURL}}{{.AvatarURL}}{{else}}/static/avatar-placeholder.svg{{end}}" alt="" />
+            </div>
+            <div class="notification-content-col">
+              <div class="notification-text">
+                {{if eq .EventType "achievement"}}
+                <span class="player-name">{{.DisplayName}}</span>
+                РїРѕР»СѓС‡Р°РµС‚ РґРѕСЃС‚РёР¶РµРЅРёРµ
+                <span class="achievement-highlight">
+                  <span class="achievement-icon-mini achievement-icon-{{.DetailData}}" aria-hidden="true"></span>
+                  <strong>{{.AchievementName}}</strong>
+                </span>
+                {{else if eq .EventType "run"}}
+                <span class="player-name">{{.DisplayName}}</span>
+                Р·Р°РІРµСЂС€Р°РµС‚ Р·Р°Р±РµРі СЃ СЂРµР·СѓР»СЊС‚Р°С‚РѕРј
+                <span class="run-time-highlight"><strong>{{formatDuration .TimeMS}}</strong></span>
+                {{else if eq .EventType "whitelist"}}
+                <span class="player-name">{{.DisplayName}}</span>
+                РґРѕР±Р°РІР»РµРЅ РІ whitelist С‚СѓСЂРЅРёСЂР°!
+                {{end}}
+              </div>
+              <time class="notification-time" datetime="{{.EventTime}}">{{formatDateTime .EventTime}}</time>
+            </div>
+          </article>
+          {{end}}
+        </div>
+        {{else}}
+        <div class="empty-state">
+          <strong>Р›РµРЅС‚Р° СЃРѕР±С‹С‚РёР№ РїСѓСЃС‚Р°</strong>
+          <span>Р—РґРµСЃСЊ Р±СѓРґСѓС‚ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊСЃСЏ РЅРѕРІС‹Рµ РґРѕСЃС‚РёР¶РµРЅРёСЏ Рё СЂРµР·СѓР»СЊС‚Р°С‚С‹ Р·Р°Р±РµРіРѕРІ СѓС‡Р°СЃС‚РЅРёРєРѕРІ.</span>
+        </div>
+        {{end}}
+      </section>
+    </main>
+
+    {{template "layout_footer" .}}
+  </body>
+</html>

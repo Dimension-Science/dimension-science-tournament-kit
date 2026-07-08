@@ -1,0 +1,14 @@
+.env
+.idea/
+.tmp/
+*.iml
+AGENTS.md
+data/uploads/*
+!data/uploads/.gitkeep
+data/assets/
+mod/.gradle/
+mod/build/
+mod/run/
+dtr-entities-fix/.gradle/
+dtr-entities-fix/build/
+server.exe

@@ -1,0 +1,79 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tournament}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-tournament}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build:
+      context: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      PORT: ${PORT:-3000}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@postgres:5432/tournament?sslmode=disable}
+      SESSION_SECRET: ${SESSION_SECRET:-change-me}
+      AUTH_SESSION_HOURS: ${AUTH_SESSION_HOURS:-12}
+      AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME:-tournament_session}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      MOD_API_KEY: ${MOD_API_KEY:?MOD_API_KEY is required}
+      MOD_SIGNING_SECRET: ${MOD_SIGNING_SECRET:?MOD_SIGNING_SECRET is required}
+      MOD_MAX_SKEW_SEC: ${MOD_MAX_SKEW_SEC:-120}
+      ALLOW_DEV_MOCK_AUTH: ${ALLOW_DEV_MOCK_AUTH:-false}
+      TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:-}
+      TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET:-}
+      TWITCH_REDIRECT_URI: ${TWITCH_REDIRECT_URI:-http://localhost:3000/api/auth/twitch/callback}
+      TWITCH_FORCE_VERIFY: ${TWITCH_FORCE_VERIFY:-false}
+      ENABLE_TWITCH_STREAM_CHECKS: ${ENABLE_TWITCH_STREAM_CHECKS:-true}
+      STREAM_STATUS_CACHE_SEC: ${STREAM_STATUS_CACHE_SEC:-60}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+      TOURNAMENT_TITLE: ${TOURNAMENT_TITLE:-Example Speedrun Tournament}
+      SITE_SHORT_NAME: ${SITE_SHORT_NAME:-EST}
+      ORGANIZER_NAME: ${ORGANIZER_NAME:-Dimension Science}
+      ORGANIZER_URL: ${ORGANIZER_URL:-}
+      SUPPORT_URL: ${SUPPORT_URL:-}
+      TELEGRAM_URL: ${TELEGRAM_URL:-}
+      DISCORD_URL: ${DISCORD_URL:-}
+      TWITCH_URL: ${TWITCH_URL:-}
+      GAME_NAME: ${GAME_NAME:-Minecraft Java Edition}
+      GAME_VERSION: ${GAME_VERSION:-1.21.11}
+      PRIZE_TEXT: ${PRIZE_TEXT:-}
+      CERTIFICATE_TEMPLATE_DIR: ${CERTIFICATE_TEMPLATE_DIR:-assets/certificates}
+      CERTIFICATE_PREFIX: ${CERTIFICATE_PREFIX:-CERT-2026}
+      BADGE_ASSET_DIR: ${BADGE_ASSET_DIR:-internal/web/static}
+      ENABLE_ACHIEVEMENTS: ${ENABLE_ACHIEVEMENTS:-true}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID:-0}
+      TELEGRAM_NEWS_CHAT: ${TELEGRAM_NEWS_CHAT:-}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      DISCORD_NEWS_CHANNEL_ID: ${DISCORD_NEWS_CHANNEL_ID:-}
+      DISCORD_SUPPORT_CHANNEL_ID: ${DISCORD_SUPPORT_CHANNEL_ID:-}
+      DISCORD_MODERATOR_ROLE_ID: ${DISCORD_MODERATOR_ROLE_ID:-}
+      DISCORD_RUNNER_ROLE_ID: ${DISCORD_RUNNER_ROLE_ID:-}
+      UPLOAD_DIR: /app/data/uploads
+      MAX_AVATAR_BYTES: ${MAX_AVATAR_BYTES:-2097152}
+    volumes:
+      - ./data/uploads:/app/data/uploads
+      - ./assets/certificates:/app/assets/certificates
+
+volumes:
+  postgres_data:

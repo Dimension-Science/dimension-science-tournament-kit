@@ -1,0 +1,222 @@
+{{define "adminPanel"}}
+<section class="panel admin-panel" data-admin-panel data-admin-page="true">
+  <div class="panel-body">
+    <div class="admin-panel-header">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h2>Управление турниром</h2>
+      </div>
+      <div class="admin-panel-tools">
+        <a class="button-secondary admin-requests-toggle" href="/cabinet">Кабинет</a>
+        <button class="button-secondary admin-requests-toggle" type="button" data-discord-sync-roles>
+          Синхронизировать роли
+        </button>
+        <button class="button-secondary admin-requests-toggle" type="button" data-news-sync>
+          Синхронизировать новости
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-layout-wrapper">
+      <!-- Сайдбар навигации -->
+      <nav class="admin-nav-sidebar" aria-label="Разделы панели администратора">
+        <button class="admin-nav-item is-active" type="button" data-tab-trigger="matches-calendar">
+          <span class="icon">📅</span>
+          <span>Календарь и матчи</span>
+        </button>
+        <button class="admin-nav-item" type="button" data-tab-trigger="whitelist-applications">
+          <span class="icon">👥</span>
+          <span>Вайт-лист и заявки</span>
+        </button>
+        <button class="admin-nav-item" type="button" data-tab-trigger="notifications-certificates">
+          <span class="icon">🔔</span>
+          <span>Уведомления и сертификаты</span>
+        </button>
+        <button class="admin-nav-item" type="button" data-tab-trigger="manage-runs">
+          <span class="icon">🏆</span>
+          <span>Внесение рекордов</span>
+        </button>
+      </nav>
+
+      <!-- Основная панель содержимого -->
+      <div class="admin-content-pane">
+        
+        <!-- Вкладка 1: Календарь и матчи -->
+        <div class="admin-tab-content is-active" data-tab-content="matches-calendar">
+          <div class="admin-card admin-card-tournament">
+            <h3>Турнир</h3>
+            <p class="muted" data-tournament-status>Загрузка статуса...</p>
+            <div class="admin-test-mode-card">
+              <div>
+                <strong>Тестовый режим</strong>
+                <p class="muted" data-test-mode-status>Проверяю статус...</p>
+              </div>
+              <div class="admin-test-mode-actions">
+                <button class="button-secondary" type="button" data-test-mode-enable>Включить на 5 дней</button>
+                <button class="button-secondary" type="button" data-test-mode-disable>Выключить</button>
+              </div>
+            </div>
+            <form class="admin-schedule-form" data-tournament-schedule-form hidden>
+              <input type="hidden" name="startsAt" />
+              <input type="hidden" name="qualificationEndsAt" />
+              <input type="hidden" name="playoffEndsAt" />
+              <input type="hidden" name="endsAt" />
+              <input type="hidden" name="playoffSlots" value="8" />
+              <div class="admin-mini-calendar" data-tournament-calendar>
+                <div class="admin-mini-calendar-head">
+                  <div>
+                    <strong>Календарь от старта</strong>
+                    <small data-calendar-summary>Выберите матч и день игры.</small>
+                  </div>
+                  <p class="admin-calendar-selected" data-calendar-selected>Матч не выбран</p>
+                </div>
+                <div class="admin-match-editor-panel" data-match-editor-panel hidden style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.01); width: 100%;">
+                  <label class="admin-match-seed-field">
+                    <span>Дата (МСК)</span>
+                    <input class="text-input" type="date" data-match-date-input autocomplete="off" style="width: 100%;" />
+                  </label>
+                  <label class="admin-match-seed-field">
+                    <span>Старт (МСК)</span>
+                    <input class="text-input" type="time" data-match-start-time-input autocomplete="off" style="width: 100%;" />
+                  </label>
+                  <label class="admin-match-seed-field">
+                    <span>Окончание (МСК)</span>
+                    <input class="text-input" type="time" data-match-end-time-input autocomplete="off" style="width: 100%;" />
+                  </label>
+                  <label class="admin-match-seed-field">
+                    <span>Seed матча</span>
+                    <input class="text-input" type="text" inputmode="numeric" data-match-seed-input placeholder="-123456789" autocomplete="off" style="width: 100%;" />
+                  </label>
+                </div>
+                <div class="admin-calendar-grid" data-calendar-grid></div>
+                <div class="admin-calendar-match-list" data-calendar-match-list></div>
+                <div class="admin-calendar-legend">
+                  <span><i class="is-qualification"></i>Квалы</span>
+                  <span><i class="is-quarter"></i>1/4</span>
+                  <span><i class="is-semi"></i>1/2</span>
+                  <span><i class="is-final"></i>Финал</span>
+                </div>
+              </div>
+              <button class="button-secondary" type="submit">Сохранить календарь</button>
+            </form>
+            <div class="admin-actions">
+              <div class="admin-actions-primary" aria-label="Основные действия турнира">
+                <button class="button" type="button" data-tournament-start>Начать турнир</button>
+                <button class="button-secondary" type="button" data-tournament-stop>Остановить</button>
+                <button class="button-secondary" type="button" data-applications-close-toggle>Загрузка...</button>
+              </div>
+              <div class="admin-danger-zone" aria-label="Опасные действия">
+                <p>Опасное действие</p>
+                <button class="button-danger" type="button" data-leaderboard-clear>Очистить таблицу</button>
+                <button class="button-danger is-soft" type="button" data-test-runs-clear>Очистить тестовые забеги</button>
+              </div>
+            </div>
+            <p class="muted" data-tournament-message></p>
+          </div>
+
+          <!-- Встроенное управление и старт матчей плей-офф (Match Control) -->
+          <div class="admin-card">
+            <h3>Старт матчей плей-офф</h3>
+            <p class="muted">Игроки должны войти в свои миры через мод. После двух подключений появится кнопка старта.</p>
+            <section class="panel match-control-status" style="margin-top: 10px; background: rgba(255, 255, 255, 0.015); border-color: rgba(255, 255, 255, 0.05);">
+              <div class="panel-body" style="padding: 12px 16px;">
+                <h4 data-control-title style="margin: 0; font-size: 16px;">Загрузка...</h4>
+                <p class="muted" data-control-message style="margin: 4px 0 0 0; font-size: 13px;">Проверяю турнир и матчи.</p>
+              </div>
+            </section>
+            <section class="match-control-layout" style="margin-top: 12px; display: grid; grid-template-columns: 200px 1fr; gap: 16px;">
+              <aside class="match-control-days" aria-label="Дни матчей" data-match-days style="display: flex; flex-direction: column; gap: 6px;"></aside>
+              <div class="match-control-list" data-match-list style="display: grid; gap: 12px;"></div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Вкладка 2: Вайт-лист и заявки -->
+        <div class="admin-tab-content" data-tab-content="whitelist-applications">
+          <div class="admin-card admin-card-whitelist">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3>Whitelist</h3>
+              <button class="button-secondary admin-requests-toggle" type="button" data-applications-toggle aria-expanded="true" aria-controls="admin-applications">
+                Заявки на участие
+              </button>
+            </div>
+            <form class="admin-inline-form" data-whitelist-form>
+              <label>
+                <span>Twitch login</span>
+                <input class="text-input" type="text" name="twitchLogin" placeholder="player_login" autocomplete="off" required />
+              </label>
+              <button class="button" type="submit">Добавить</button>
+            </form>
+            <p class="muted" data-whitelist-message></p>
+            <div class="admin-list" data-participants-list></div>
+          </div>
+
+          <div class="admin-card admin-card-applications" id="admin-applications" data-applications-panel>
+            <h3>Заявки на турнир</h3>
+            <p class="muted" data-applications-message>Заявки появятся здесь после формы /apply.</p>
+            <div class="admin-application-list" data-applications-list></div>
+          </div>
+        </div>
+
+        <!-- Вкладка 3: Уведомления и сертификаты -->
+        <div class="admin-tab-content" data-tab-content="notifications-certificates">
+          <div class="admin-card admin-card-push-notification">
+            <h3>Всплывающее уведомление (Push)</h3>
+            <p class="muted">Задайте заголовок и текст всплывающего уведомления для всех пользователей.</p>
+            <form class="admin-vertical-form" data-push-notification-form>
+              <div class="admin-form-group">
+                <label class="admin-form-label">
+                  <span>Заголовок</span>
+                  <input class="text-input" type="text" name="title" placeholder="Важное объявление" autocomplete="off" />
+                </label>
+              </div>
+              <div class="admin-form-group">
+                <label class="admin-form-label">
+                  <span>Текст</span>
+                  <textarea class="text-input" name="text" placeholder="Заявки на участие закрываются сегодня в 18:00!" rows="3" required></textarea>
+                </label>
+              </div>
+              <div class="admin-actions-row">
+                <button class="button" type="submit">Опубликовать</button>
+                <button class="button-secondary" type="button" data-push-clear>Очистить</button>
+              </div>
+            </form>
+            <p class="muted admin-status-text" data-push-status-message></p>
+          </div>
+
+          <div class="admin-card admin-card-certificates-test">
+            <h3>Проверка сертификатов</h3>
+            <p class="muted">Скачать тестовый сертификат (2016x2688, шрифт NT Brick Sans):</p>
+            <div class="admin-actions-row" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+              <a class="button-secondary" href="/api/admin/test-certificate?status=member" target="_blank">1. Участник</a>
+              <a class="button-secondary" href="/api/admin/test-certificate?status=playoff" target="_blank">2. Плей-офф</a>
+              <a class="button-secondary" href="/api/admin/test-certificate?status=finalist" target="_blank">3. Финалист</a>
+              <a class="button-secondary" href="/api/admin/test-certificate?status=winner" target="_blank">4. Победитель</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Вкладка 4: Внесение рекордов -->
+        <div class="admin-tab-content" data-tab-content="manage-runs">
+          <div class="admin-card">
+            <h3>Внесение рекордов</h3>
+            <p class="muted">Выберите участника, чтобы просмотреть все его рекорды и аннулировать нелегитимные забеги.</p>
+            <div class="admin-search-wrapper" style="margin: 12px 0;">
+              <input class="text-input search-input" type="text" id="admin-runs-tab-search" placeholder="Поиск по Twitch логину или Minecraft нику..." autocomplete="off" />
+            </div>
+            <div class="admin-runs-players-grid" id="tab-players-grid" style="margin-top: 12px;">
+              <!-- Список участников будет сгенерирован через JS -->
+            </div>
+            <div class="empty-state" id="tab-search-empty-state" hidden>
+              <strong>Никого не нашли</strong>
+              <span>Попробуйте изменить поисковый запрос.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+{{end}}

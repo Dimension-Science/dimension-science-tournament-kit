@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    {{template "layout_header" .}}
+    <title>{{.Profile.ShortName}} - РђРґРјРёРЅ-РїР°РЅРµР»СЊ</title>
+  </head>
+  <body>
+    <main class="container admin-page">
+      <section class="info-hero bracket-hero">
+        <div class="about-title-row">
+          <div>
+            <p class="eyebrow">{{.Profile.ShortName}} Control</p>
+            <h1>РђРґРјРёРЅ-РїР°РЅРµР»СЊ</h1>
+          </div>
+          <a class="button-secondary about-home-link" href="/cabinet">Р’РµСЂРЅСѓС‚СЊСЃСЏ РІ РєР°Р±РёРЅРµС‚</a>
+        </div>
+      </section>
+
+      {{template "adminPanel" .}}
+    </main>
+
+    {{template "layout_footer" .}}
+
+    <script src="/static/cabinet.js?v=news-promo-v4"></script>
+    <script src="/static/match-control.js?v=match-control-v3" defer></script>
+  </body>
+</html>
