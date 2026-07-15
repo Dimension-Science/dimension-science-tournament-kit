@@ -68,7 +68,7 @@ func main() {
 	defer appCancel()
 	db.StartExpiredNonceCleaner(appCtx)
 	discord.StartRoleSync(appCtx, db)
-	telegrambot.Start(appCtx, cfg.TelegramBotToken, cfg.TelegramAdminChatID, cfg.TelegramNewsChat, cfg.BaseURL, cfg.UploadDir, db, discord, log.Default())
+	telegrambot.Start(appCtx, cfg.TelegramBotToken, cfg.TelegramAdminChatID, cfg.TelegramNewsChat, cfg.BaseURL, cfg.DiscordURL, cfg.UploadDir, db, discord, log.Default())
 
 	modrinthPoller := modrinth.NewPoller(db, discord, log.Default())
 	modrinthPoller.Start(appCtx)

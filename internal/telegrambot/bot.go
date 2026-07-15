@@ -32,6 +32,7 @@ type Bot struct {
 	adminChatID      int64
 	newsChat         string
 	baseURL          string
+	discordURL       string
 	uploadDir        string
 	store            *store.Store
 	discord          *discordbot.Client
@@ -39,6 +40,8 @@ type Bot struct {
 	logger           *log.Logger
 	pendingSupport   map[int64]bool
 	pendingCheckCert map[int64]bool
+	pendingCooperate map[int64]bool
+	menuState        map[int64]string
 }
 
 type updateResponse struct {
@@ -159,16 +162,21 @@ type telegramUser struct {
 }
 
 const (
-	buttonStatus      = "РЎС‚Р°С‚СѓСЃ Р·Р°СЏРІРєРё"
-	buttonApply       = "РџРѕРґР°С‚СЊ Р·Р°СЏРІРєСѓ"
-	buttonSupport     = "РўРµС…РїРѕРґРґРµСЂР¶РєР°"
-	buttonSite        = "РЎР°Р№С‚ Tournament"
-	buttonMyID        = "РњРѕР№ Telegram ID"
-	buttonOpenSupport = "РћС‚РєСЂС‹С‚С‹Рµ РѕР±СЂР°С‰РµРЅРёСЏ"
-	buttonCheckCert   = "РџСЂРѕРІРµСЂРёС‚СЊ СЃРµСЂС‚РёС„РёРєР°С‚"
+	buttonProjects    = "Проекты"
+	buttonDTR         = "DTR"
+	buttonChaos       = "Chaos"
+	buttonApply       = "Подать заявку"
+	buttonSupport     = "Написать в поддержку"
+	buttonCooperation = "Сотрудничество"
+	buttonBack        = "Назад"
+	buttonCheckCert   = "Проверить сертификат"
+	buttonOpenSupport = "Открытые обращения"
+	buttonStatus      = "Статус заявки DTR"
+	buttonSite        = "Сайт Dimension Science"
+	buttonMyID        = "Мой Telegram ID"
 )
 
-func Start(ctx context.Context, token string, adminChatID int64, newsChat string, baseURL string, uploadDir string, st *store.Store, discord *discordbot.Client, logger *log.Logger) {
+func Start(ctx context.Context, token string, adminChatID int64, newsChat string, baseURL string, discordURL string, uploadDir string, st *store.Store, discord *discordbot.Client, logger *log.Logger) {
 	token = strings.TrimSpace(token)
 	if token == "" {
 		if logger != nil {
@@ -185,6 +193,7 @@ func Start(ctx context.Context, token string, adminChatID int64, newsChat string
 		adminChatID:      adminChatID,
 		newsChat:         normalizeTelegramChat(newsChat),
 		baseURL:          strings.TrimRight(baseURL, "/"),
+		discordURL:       strings.TrimSpace(discordURL),
 		uploadDir:        uploadDir,
 		store:            st,
 		discord:          discord,
@@ -192,6 +201,8 @@ func Start(ctx context.Context, token string, adminChatID int64, newsChat string
 		logger:           logger,
 		pendingSupport:   make(map[int64]bool),
 		pendingCheckCert: make(map[int64]bool),
+		pendingCooperate: make(map[int64]bool),
+		menuState:        make(map[int64]string),
 	}
 	go bot.loop(ctx)
 }
@@ -255,14 +266,13 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 	chatID := message.Chat.ID
 	first := strings.ToLower(strings.Split(command[0], "@")[0])
 	if first == "/start" || first == "/help" {
+		b.menuState[chatID] = "main"
 		return strings.Join([]string{
-			"РџСЂРёРІРµС‚! Р­С‚Рѕ Р±РѕС‚ Example Speedrun Tournament.",
+			"Привет! Это официальный бот Dimension Science.",
 			"",
-			"Р—РґРµСЃСЊ РјРѕР¶РЅРѕ РїСЂРѕРІРµСЂРёС‚СЊ СЃС‚Р°С‚СѓСЃ Р·Р°СЏРІРєРё РЅР° С‚СѓСЂРЅРёСЂ, РїРµСЂРµР№С‚Рё Рє С„РѕСЂРјРµ РїРѕРґР°С‡Рё РёР»Рё РѕС‚РєСЂС‹С‚СЊ С‚РµС…РїРѕРґРґРµСЂР¶РєСѓ.",
+			"Здесь можно узнать о проектах, подать заявку в Chaos, проверить сертификат DTR, предложить сотрудничество или написать в поддержку.",
 			"",
-			fmt.Sprintf("Р’Р°С€ Telegram ID: %d", chatID),
-			"",
-			"РќР°Р¶РјРё РєРЅРѕРїРєСѓ РІ РјРµРЅСЋ РЅРёР¶Рµ.",
+			"Выберите раздел в меню ниже.",
 		}, "\n")
 	}
 
@@ -273,10 +283,43 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 	}
 
 	switch strings.ToLower(text) {
+	case strings.ToLower(buttonProjects):
+		b.menuState[chatID] = "projects"
+		return "Проекты Dimension Science:\n\nDTR — завершённый турнирный проект.\nChaos — новое игровое направление."
+	case strings.ToLower(buttonDTR):
+		b.menuState[chatID] = "dtr"
+		return "Dimension Tournament Run (DTR)\n\nЗдесь можно проверить подлинность сертификата участника."
+	case strings.ToLower(buttonChaos):
+		b.menuState[chatID] = "chaos"
+		return "Dimension Science: Chaos\n\nНажмите «Подать заявку», чтобы перейти к форме участия в Discord."
+	case strings.ToLower(buttonBack):
+		switch b.menuState[chatID] {
+		case "dtr", "chaos":
+			b.menuState[chatID] = "projects"
+			return "Выберите проект: DTR или Chaos."
+		default:
+			b.menuState[chatID] = "main"
+			return "Главное меню Dimension Science."
+		}
+	case strings.ToLower(buttonCooperation):
+		b.pendingCooperate[chatID] = true
+		delete(b.pendingSupport, chatID)
+		return strings.Join([]string{
+			"Сотрудничество с Dimension Science",
+			"",
+			"Мы открыты к партнёрствам, совместным игровым событиям, медиа-проектам, спонсорству и другим предложениям.",
+			"Опишите идею одним сообщением. Укажите, кто вы, что предлагаете и как с вами связаться.",
+		}, "\n")
+	}
+
+	switch strings.ToLower(text) {
 	case strings.ToLower(buttonStatus):
 		return "РћС‚РїСЂР°РІСЊ РЅРѕРјРµСЂ Р·Р°СЏРІРєРё РѕРґРЅРёРј СЃРѕРѕР±С‰РµРЅРёРµРј. РќР°РїСЂРёРјРµСЂ: #12"
 	case strings.ToLower(buttonApply):
-		return "Р¤РѕСЂРјР° Р·Р°СЏРІРєРё: " + b.baseURL + "/apply\n\nРџРµСЂРµРґ РѕС‚РїСЂР°РІРєРѕР№ РїСЂРѕРІРµСЂСЊ Twitch-РєР°РЅР°Р», Discord username Рё РїРѕСЃС‚Р°РІСЊ РіР°Р»РѕС‡РєСѓ РїСЂРѕ РѕР±СЏР·Р°С‚РµР»СЊРЅС‹Р№ СЃС‚СЂРёРј."
+		if b.discordURL != "" {
+			return "Подать заявку в Dimension Science: Chaos можно в Discord, в канале #подать-заявку:\n" + b.discordURL
+		}
+		return "Подать заявку в Dimension Science: Chaos можно в Discord, в канале #подать-заявку."
 	case strings.ToLower(buttonSupport):
 		if b.adminChatID == 0 && !b.discordSupportEnabled() {
 			return "Support is not connected yet. Contact the tournament organizer through the site contacts."
@@ -285,12 +328,7 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 			return b.openSupportTickets(ctx)
 		}
 		b.pendingSupport[chatID] = true
-		return strings.Join([]string{
-			"РўРµС…РїРѕРґРґРµСЂР¶РєР° Tournament",
-			"",
-			"РћРїРёС€Рё РїСЂРѕР±Р»РµРјСѓ РѕРґРЅРёРј СЃРѕРѕР±С‰РµРЅРёРµРј. Р‘РѕС‚ РѕС‚РїСЂР°РІРёС‚ РµРµ Р°РґРјРёРЅСѓ Рё РІС‹РґР°СЃС‚ РЅРѕРјРµСЂ РѕР±СЂР°С‰РµРЅРёСЏ.",
-			"Р›СѓС‡С€Рµ СЃСЂР°Р·Сѓ СѓРєР°Р·Р°С‚СЊ РЅРѕРјРµСЂ Р·Р°СЏРІРєРё Рё Twitch-РЅРёРє.",
-		}, "\n")
+		return "Поддержка Dimension Science\n\nОпишите вопрос или проблему одним сообщением. Бот создаст тикет и отправит его команде."
 	case strings.ToLower(buttonSite):
 		return "РЎР°Р№С‚ С‚СѓСЂРЅРёСЂР°: " + b.baseURL
 	case strings.ToLower(buttonMyID):
@@ -302,12 +340,17 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 	case strings.ToLower(buttonCheckCert):
 		b.pendingCheckCert[chatID] = true
 		delete(b.pendingSupport, chatID)
-		return "РћС‚РїСЂР°РІСЊС‚Рµ СѓРЅРёРєР°Р»СЊРЅС‹Р№ РЅРѕРјРµСЂ СЃРµСЂС‚РёС„РёРєР°С‚Р° РґР»СЏ РїСЂРѕРІРµСЂРєРё (РЅР°РїСЂРёРјРµСЂ: CERT-2026-123456)."
+		return "Отправьте номер сертификата DTR, например: CERT-2026-123456."
 	}
 
 	if b.pendingCheckCert[chatID] {
 		delete(b.pendingCheckCert, chatID)
 		return b.verifyCertificateNumber(ctx, text)
+	}
+
+	if b.pendingCooperate[chatID] {
+		delete(b.pendingCooperate, chatID)
+		return b.createSupportTicket(ctx, message, "[Сотрудничество]\n"+text)
 	}
 
 	if strings.HasPrefix(strings.ToUpper(text), "CERT-2026-") && len(text) == 15 {
@@ -401,7 +444,7 @@ func (b *Bot) createSupportTicket(ctx context.Context, message *telegramMessage,
 	question = strings.TrimSpace(question)
 	if question == "" {
 		b.pendingSupport[message.Chat.ID] = true
-		return "РЎРѕРѕР±С‰РµРЅРёРµ РїСѓСЃС‚РѕРµ. РћРїРёС€Рё РїСЂРѕР±Р»РµРјСѓ РѕРґРЅРёРј СЃРѕРѕР±С‰РµРЅРёРµРј."
+		return "Сообщение пустое. Опишите вопрос одним сообщением."
 	}
 
 	userID := int64(0)
@@ -420,36 +463,36 @@ func (b *Bot) createSupportTicket(ctx context.Context, message *telegramMessage,
 		Question:       question,
 	})
 	if err != nil {
-		return "РќРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РѕР±СЂР°С‰РµРЅРёРµ. РџРѕРїСЂРѕР±СѓР№ РµС‰Рµ СЂР°Р· С‡СѓС‚СЊ РїРѕР·Р¶Рµ."
+		return "Не удалось создать тикет. Попробуйте ещё раз немного позже."
 	}
 
 	adminMessage := strings.Join([]string{
-		fmt.Sprintf("РќРѕРІРѕРµ РѕР±СЂР°С‰РµРЅРёРµ #%d", ticket.TicketNumber),
+		fmt.Sprintf("Новый тикет #%d", ticket.TicketNumber),
 		"",
-		"РћС‚: " + supportUserLabel(ticket),
+		"От: " + supportUserLabel(ticket),
 		fmt.Sprintf("Chat ID: %d", ticket.UserChatID),
 		"",
 		ticket.Question,
 		"",
-		fmt.Sprintf("РћС‚РІРµС‚РёС‚СЊ: РћС‚РІРµС‚ #%d С‚РµРєСЃС‚ РѕС‚РІРµС‚Р°", ticket.TicketNumber),
+		fmt.Sprintf("Ответить: Ответ #%d текст ответа", ticket.TicketNumber),
 	}, "\n")
 	if b.discordSupportEnabled() {
 		b.discord.NotifySupportTicket(ctx, ticket)
 	}
 	if b.adminChatID == 0 {
 		return strings.Join([]string{
-			fmt.Sprintf("РћР±СЂР°С‰РµРЅРёРµ #%d РѕС‚РїСЂР°РІР»РµРЅРѕ Р°РґРјРёРЅСѓ.", ticket.TicketNumber),
-			"РљРѕРіРґР° Р°РґРјРёРЅ РѕС‚РІРµС‚РёС‚, Р±РѕС‚ РїСЂРёС€Р»РµС‚ РѕС‚РІРµС‚ СЃСЋРґР°.",
+			fmt.Sprintf("Тикет #%d отправлен команде.", ticket.TicketNumber),
+			"Когда сотрудник ответит, бот пришлёт сообщение сюда.",
 		}, "\n")
 	}
 	if err := b.sendMessage(ctx, b.adminChatID, adminMessage); err != nil {
 		b.logger.Printf("telegram support forward: %v", err)
-		return fmt.Sprintf("РћР±СЂР°С‰РµРЅРёРµ #%d СЃРѕР·РґР°РЅРѕ, РЅРѕ Р°РґРјРёРЅСЃРєРѕРµ СѓРІРµРґРѕРјР»РµРЅРёРµ РЅРµ РѕС‚РїСЂР°РІРёР»РѕСЃСЊ. РњС‹ РІСЃРµ СЂР°РІРЅРѕ СѓРІРёРґРёРј РµРіРѕ РІ Р±Р°Р·Рµ.", ticket.TicketNumber)
+		return fmt.Sprintf("Тикет #%d создан, но уведомление сотруднику не отправилось. Тикет сохранён в системе.", ticket.TicketNumber)
 	}
 
 	return strings.Join([]string{
-		fmt.Sprintf("РћР±СЂР°С‰РµРЅРёРµ #%d РѕС‚РїСЂР°РІР»РµРЅРѕ Р°РґРјРёРЅСѓ.", ticket.TicketNumber),
-		"РљРѕРіРґР° Р°РґРјРёРЅ РѕС‚РІРµС‚РёС‚, Р±РѕС‚ РїСЂРёС€Р»РµС‚ РѕС‚РІРµС‚ СЃСЋРґР°.",
+		fmt.Sprintf("Тикет #%d отправлен команде.", ticket.TicketNumber),
+		"Когда сотрудник ответит, бот пришлёт сообщение сюда.",
 	}, "\n")
 }
 
@@ -1230,9 +1273,8 @@ func applicationNumberFromText(text string) (int64, bool) {
 func replyKeyboard() map[string]any {
 	return map[string]any{
 		"keyboard": [][]map[string]string{
-			{{"text": buttonStatus}, {"text": buttonCheckCert}},
-			{{"text": buttonApply}, {"text": buttonSupport}},
-			{{"text": buttonSite}, {"text": buttonMyID}},
+			{{"text": buttonProjects}},
+			{{"text": buttonSupport}, {"text": buttonCooperation}},
 		},
 		"resize_keyboard":   true,
 		"one_time_keyboard": false,
@@ -1240,12 +1282,36 @@ func replyKeyboard() map[string]any {
 	}
 }
 
+func projectsKeyboard() map[string]any {
+	return keyboardRows([][]string{{buttonDTR, buttonChaos}, {buttonBack}})
+}
+
+func dtrKeyboard() map[string]any {
+	return keyboardRows([][]string{{buttonCheckCert}, {buttonBack}})
+}
+
+func chaosKeyboard() map[string]any {
+	return keyboardRows([][]string{{buttonApply}, {buttonBack}})
+}
+
+func keyboardRows(rows [][]string) map[string]any {
+	keyboard := make([][]map[string]string, 0, len(rows))
+	for _, row := range rows {
+		buttons := make([]map[string]string, 0, len(row))
+		for _, label := range row {
+			buttons = append(buttons, map[string]string{"text": label})
+		}
+		keyboard = append(keyboard, buttons)
+	}
+	return map[string]any{"keyboard": keyboard, "resize_keyboard": true, "one_time_keyboard": false, "selective": false}
+}
+
 func adminReplyKeyboard() map[string]any {
 	return map[string]any{
 		"keyboard": [][]map[string]string{
 			{{"text": buttonOpenSupport}},
-			{{"text": buttonStatus}, {"text": buttonCheckCert}},
-			{{"text": buttonSite}, {"text": buttonMyID}},
+			{{"text": buttonProjects}},
+			{{"text": buttonSupport}, {"text": buttonCooperation}},
 		},
 		"resize_keyboard":   true,
 		"one_time_keyboard": false,
@@ -1385,6 +1451,14 @@ func (b *Bot) sendMessage(ctx context.Context, chatID int64, text string) error 
 }
 
 func (b *Bot) keyboardFor(chatID int64) map[string]any {
+	switch b.menuState[chatID] {
+	case "projects":
+		return projectsKeyboard()
+	case "dtr":
+		return dtrKeyboard()
+	case "chaos":
+		return chaosKeyboard()
+	}
 	if b.isAdmin(chatID) {
 		return adminReplyKeyboard()
 	}
@@ -1425,7 +1499,7 @@ func (b *Bot) verifyCertificateNumber(ctx context.Context, text string) string {
 
 	matched, _ := regexp.MatchString(`^CERT-2026-\d{6}$`, number)
 	if !matched {
-		return "РќРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚ РЅРѕРјРµСЂР° СЃРµСЂС‚РёС„РёРєР°С‚Р°. РћРЅ РґРѕР»Р¶РµРЅ РІС‹РіР»СЏРґРµС‚СЊ С‚Р°Рє: CERT-2026-123456"
+		return "Неверный формат номера сертификата. Пример: CERT-2026-123456"
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
@@ -1433,11 +1507,11 @@ func (b *Bot) verifyCertificateNumber(ctx context.Context, text string) string {
 
 	p, certStatus, available, err := b.store.FindParticipantByCertificateNumber(queryCtx, number)
 	if err != nil {
-		return "РќРµ СѓРґР°Р»РѕСЃСЊ РІС‹РїРѕР»РЅРёС‚СЊ РїСЂРѕРІРµСЂРєСѓ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…. РџРѕРїСЂРѕР±СѓР№С‚Рµ РїРѕР·Р¶Рµ."
+		return "Не удалось выполнить проверку. Попробуйте позже."
 	}
 
 	if !available || p == nil {
-		return fmt.Sprintf("РЎРµСЂС‚РёС„РёРєР°С‚ СЃ РЅРѕРјРµСЂРѕРј %s РЅРµ РЅР°Р№РґРµРЅ РёР»Рё РµС‰Рµ РЅРµ СЂР°Р·Р±Р»РѕРєРёСЂРѕРІР°РЅ.", number)
+		return fmt.Sprintf("Сертификат %s не найден или ещё не опубликован.", number)
 	}
 
 	displayName := p.TwitchDisplayName
@@ -1446,15 +1520,15 @@ func (b *Bot) verifyCertificateNumber(ctx context.Context, text string) string {
 	}
 
 	lines := []string{
-		"вњ… РЎРµСЂС‚РёС„РёРєР°С‚ Tournament РїРѕРґС‚РІРµСЂР¶РґРµРЅ!",
+		"✅ Сертификат DTR подтверждён!",
 		"",
-		fmt.Sprintf("РќРѕРјРµСЂ: %s", number),
-		fmt.Sprintf("РЎС‚Р°С‚СѓСЃ: %s", certStatus),
-		fmt.Sprintf("РЈС‡Р°СЃС‚РЅРёРє: %s", displayName),
+		fmt.Sprintf("Номер: %s", number),
+		fmt.Sprintf("Статус: %s", certStatus),
+		fmt.Sprintf("Участник: %s", displayName),
 	}
 
 	if p.MinecraftNick != "" {
-		lines = append(lines, fmt.Sprintf("Minecraft РЅРёРє: %s", p.MinecraftNick))
+		lines = append(lines, fmt.Sprintf("Minecraft ник: %s", p.MinecraftNick))
 	}
 
 	if p.BestTimeMS != nil {
@@ -1469,7 +1543,7 @@ func (b *Bot) verifyCertificateNumber(ctx context.Context, text string) string {
 		} else {
 			formattedTime = fmt.Sprintf("%02d:%02d.%03d", minutes, seconds%60, ms%1000)
 		}
-		lines = append(lines, fmt.Sprintf("Р РµРєРѕСЂРґ РЅР° С‚СѓСЂРЅРёСЂРµ: %s", formattedTime))
+		lines = append(lines, fmt.Sprintf("Рекорд на турнире: %s", formattedTime))
 	}
 
 	return strings.Join(lines, "\n")
