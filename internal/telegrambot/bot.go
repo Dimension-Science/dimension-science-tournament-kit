@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"html"
@@ -28,20 +29,31 @@ import (
 )
 
 type Bot struct {
-	token            string
-	adminChatID      int64
-	newsChat         string
-	baseURL          string
-	discordURL       string
-	uploadDir        string
-	store            *store.Store
-	discord          *discordbot.Client
-	client           *http.Client
-	logger           *log.Logger
-	pendingSupport   map[int64]bool
-	pendingCheckCert map[int64]bool
-	pendingCooperate map[int64]bool
-	menuState        map[int64]string
+	token             string
+	adminChatID       int64
+	newsChat          string
+	baseURL           string
+	discordURL        string
+	uploadDir         string
+	store             *store.Store
+	discord           *discordbot.Client
+	client            *http.Client
+	logger            *log.Logger
+	pendingSupport    map[int64]bool
+	pendingCheckCert  map[int64]bool
+	pendingCooperate  map[int64]bool
+	chaosApplications map[int64]*telegramChaosApplicationDraft
+	menuState         map[int64]string
+}
+
+type telegramChaosApplicationDraft struct {
+	Step       int
+	GameNick   string
+	Timezone   string
+	Experience string
+	DiscordID  string
+	Motivation string
+	Links      string
 }
 
 type updateResponse struct {
@@ -189,20 +201,21 @@ func Start(ctx context.Context, token string, adminChatID int64, newsChat string
 	}
 
 	bot := &Bot{
-		token:            token,
-		adminChatID:      adminChatID,
-		newsChat:         normalizeTelegramChat(newsChat),
-		baseURL:          strings.TrimRight(baseURL, "/"),
-		discordURL:       strings.TrimSpace(discordURL),
-		uploadDir:        uploadDir,
-		store:            st,
-		discord:          discord,
-		client:           &http.Client{Timeout: 35 * time.Second},
-		logger:           logger,
-		pendingSupport:   make(map[int64]bool),
-		pendingCheckCert: make(map[int64]bool),
-		pendingCooperate: make(map[int64]bool),
-		menuState:        make(map[int64]string),
+		token:             token,
+		adminChatID:       adminChatID,
+		newsChat:          normalizeTelegramChat(newsChat),
+		baseURL:           strings.TrimRight(baseURL, "/"),
+		discordURL:        strings.TrimSpace(discordURL),
+		uploadDir:         uploadDir,
+		store:             st,
+		discord:           discord,
+		client:            &http.Client{Timeout: 35 * time.Second},
+		logger:            logger,
+		pendingSupport:    make(map[int64]bool),
+		pendingCheckCert:  make(map[int64]bool),
+		pendingCooperate:  make(map[int64]bool),
+		chaosApplications: make(map[int64]*telegramChaosApplicationDraft),
+		menuState:         make(map[int64]string),
 	}
 	go bot.loop(ctx)
 }
@@ -266,6 +279,7 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 	chatID := message.Chat.ID
 	first := strings.ToLower(strings.Split(command[0], "@")[0])
 	if first == "/start" || first == "/help" {
+		delete(b.chaosApplications, chatID)
 		b.menuState[chatID] = "main"
 		return strings.Join([]string{
 			"Привет! Это официальный бот Dimension Science.",
@@ -280,6 +294,15 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 		if reply := b.handleAdminMessage(ctx, text); reply != "" {
 			return reply
 		}
+	}
+
+	if draft := b.chaosApplications[chatID]; draft != nil {
+		if strings.EqualFold(text, buttonBack) || strings.EqualFold(text, "Отменить") {
+			delete(b.chaosApplications, chatID)
+			b.menuState[chatID] = "chaos"
+			return "Заполнение заявки отменено."
+		}
+		return b.handleChaosApplicationStep(ctx, message, draft, text)
 	}
 
 	switch strings.ToLower(text) {
@@ -316,10 +339,9 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 	case strings.ToLower(buttonStatus):
 		return "РћС‚РїСЂР°РІСЊ РЅРѕРјРµСЂ Р·Р°СЏРІРєРё РѕРґРЅРёРј СЃРѕРѕР±С‰РµРЅРёРµРј. РќР°РїСЂРёРјРµСЂ: #12"
 	case strings.ToLower(buttonApply):
-		if b.discordURL != "" {
-			return "Подать заявку в Dimension Science: Chaos можно в Discord, в канале #подать-заявку:\n" + b.discordURL
-		}
-		return "Подать заявку в Dimension Science: Chaos можно в Discord, в канале #подать-заявку."
+		b.chaosApplications[chatID] = &telegramChaosApplicationDraft{Step: 1}
+		b.menuState[chatID] = "chaos"
+		return "Заявка в Dimension Science: Chaos\n\nШаг 1 из 6. Напишите ваш игровой ник в Minecraft (от 2 до 32 символов).\n\nЧтобы прервать заполнение, нажмите «Назад» или напишите «Отменить»."
 	case strings.ToLower(buttonSupport):
 		if b.adminChatID == 0 && !b.discordSupportEnabled() {
 			return "Support is not connected yet. Contact the tournament organizer through the site contacts."
@@ -404,6 +426,96 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 		lines = append(lines, "РњРѕР¶РЅРѕ РёСЃРїСЂР°РІРёС‚СЊ РґР°РЅРЅС‹Рµ Рё РѕС‚РїСЂР°РІРёС‚СЊ Р·Р°СЏРІРєСѓ Р·Р°РЅРѕРІРѕ: "+b.baseURL+"/apply")
 	}
 	return strings.Join(lines, "\n")
+}
+
+func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramMessage, draft *telegramChaosApplicationDraft, text string) string {
+	chatID := message.Chat.ID
+	length := len([]rune(strings.TrimSpace(text)))
+	switch draft.Step {
+	case 1:
+		if length < 2 || length > 32 {
+			return "Игровой ник должен содержать от 2 до 32 символов. Попробуйте ещё раз."
+		}
+		draft.GameNick = strings.TrimSpace(text)
+		draft.Step = 2
+		return "Шаг 2 из 6. Укажите ваш часовой пояс, например UTC+5."
+	case 2:
+		if length < 2 || length > 32 {
+			return "Часовой пояс должен содержать от 2 до 32 символов. Попробуйте ещё раз."
+		}
+		draft.Timezone = strings.TrimSpace(text)
+		draft.Step = 3
+		return "Шаг 3 из 6. Сколько лет вы играете в Minecraft? Можно ответить кратко, например: 7 лет."
+	case 3:
+		if length < 1 || length > 50 {
+			return "Ответ должен содержать от 1 до 50 символов. Например: 7 лет."
+		}
+		draft.Experience = strings.TrimSpace(text)
+		draft.Step = 4
+		return "Шаг 4 из 6. Отправьте ваш числовой Discord ID (17–20 цифр). Он нужен, чтобы после одобрения выдать роль «Игрок DS | Chaos»."
+	case 4:
+		value := strings.TrimSpace(text)
+		if !regexp.MustCompile(`^\d{17,20}$`).MatchString(value) {
+			return "Нужен именно числовой Discord ID длиной 17–20 цифр. В Discord включите режим разработчика, нажмите на свой профиль и выберите «Копировать ID»."
+		}
+		draft.DiscordID = value
+		draft.Step = 5
+		return "Шаг 5 из 6. Почему вы хотите присоединиться? Поле необязательное — напишите ответ или отправьте «-», чтобы пропустить."
+	case 5:
+		if text != "-" {
+			if length > 700 {
+				return "Ответ слишком длинный — максимум 700 символов."
+			}
+			draft.Motivation = strings.TrimSpace(text)
+		}
+		draft.Step = 6
+		return "Шаг 6 из 6. Пришлите ссылки на Twitch, YouTube или профиль. Поле необязательное — отправьте «-», чтобы пропустить."
+	case 6:
+		if text != "-" {
+			if length > 500 {
+				return "Ссылки и описание слишком длинные — максимум 500 символов."
+			}
+			draft.Links = strings.TrimSpace(text)
+		}
+		draft.Step = 7
+		motivation := draft.Motivation
+		if motivation == "" {
+			motivation = "не указано"
+		}
+		links := draft.Links
+		if links == "" {
+			links = "не указаны"
+		}
+		return fmt.Sprintf("Проверьте заявку:\n\nИгровой ник: %s\nЧасовой пояс: %s\nСколько играете: %s\nDiscord ID: %s\nПочему хотите присоединиться: %s\nСсылки: %s\n\nНапишите «Отправить», чтобы передать заявку команде, или «Отменить».", draft.GameNick, draft.Timezone, draft.Experience, draft.DiscordID, motivation, links)
+	case 7:
+		if !strings.EqualFold(strings.TrimSpace(text), "Отправить") {
+			return "Для подтверждения напишите «Отправить». Чтобы начать заново, напишите «Отменить» и снова нажмите «Подать заявку»."
+		}
+		if b.discord == nil || b.store == nil {
+			return "Сейчас отправка заявок временно недоступна. Ваши ответы сохранены — попробуйте отправить последнее сообщение ещё раз позже."
+		}
+		username := "Telegram"
+		if message.From != nil {
+			username = "Telegram: " + telegramDisplayName(*message.From)
+		}
+		app, err := b.discord.SubmitExternalApplication(ctx, b.store, store.DiscordApplicationInput{
+			DiscordUserID: draft.DiscordID, DiscordUsername: username, ProjectKey: "chaos",
+			GameNick: draft.GameNick, Timezone: draft.Timezone, Experience: draft.Experience,
+			Motivation: draft.Motivation, Links: draft.Links,
+		})
+		if errors.Is(err, store.ErrActiveDiscordApplication) {
+			delete(b.chaosApplications, chatID)
+			return "У вас уже есть активная заявка Chaos. Дождитесь решения команды по ней."
+		}
+		if err != nil {
+			b.logger.Printf("telegram Chaos application: %v", err)
+			return "Не удалось отправить заявку. Ваши ответы сохранены — отправьте последнее сообщение ещё раз через несколько минут."
+		}
+		delete(b.chaosApplications, chatID)
+		return fmt.Sprintf("Заявка DSC-%05d отправлена! Команда Dimension Science рассмотрит её в Discord. После одобрения роль «Игрок DS | Chaos» будет выдана автоматически.", app.ApplicationNumber)
+	}
+	delete(b.chaosApplications, chatID)
+	return "Заполнение заявки сброшено. Нажмите «Подать заявку», чтобы начать заново."
 }
 
 func (b *Bot) handleAdminMessage(ctx context.Context, text string) string {

@@ -303,6 +303,38 @@ func (c *Client) sendApplicantDM(session *discordgo.Session, userID, content str
 	_, _ = session.ChannelMessageSend(channel.ID, content)
 }
 
+// SubmitExternalApplication accepts applications collected by another trusted
+// interface, such as the Dimension Science Telegram bot, and publishes the
+// same staff review card used by the Discord modal.
+func (c *Client) SubmitExternalApplication(ctx context.Context, st *store.Store, input store.DiscordApplicationInput) (*store.DiscordApplication, error) {
+	if c == nil || st == nil {
+		return nil, errors.New("Discord bot is disabled")
+	}
+	input.GuildID = c.guildID
+	input.ProjectKey = "chaos"
+	if c.applicationLogID == "" {
+		return nil, errors.New("Discord application log channel is not configured")
+	}
+	c.sessionMu.RLock()
+	session := c.session
+	c.sessionMu.RUnlock()
+	if session == nil {
+		return nil, errors.New("Discord bot is not connected")
+	}
+	app, err := st.CreateDiscordApplication(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	message, err := session.ChannelMessageSendComplex(c.applicationLogID, applicationLogMessage(app, true))
+	if err != nil {
+		return app, err
+	}
+	if err := st.SetDiscordApplicationLogMessage(ctx, app.ID, message.ChannelID, message.ID); err != nil {
+		return app, err
+	}
+	return app, nil
+}
+
 // ReviewApplicationFromAdmin lets the existing web admin panel use the same
 // role assignment and Discord notification path as the staff message buttons.
 func (c *Client) ReviewApplicationFromAdmin(ctx context.Context, st *store.Store, id, status, actor, reason string) (*store.DiscordApplication, error) {
