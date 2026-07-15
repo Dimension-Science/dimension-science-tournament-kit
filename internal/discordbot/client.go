@@ -182,12 +182,12 @@ func (c *Client) NotifyApplicationSubmitted(ctx context.Context, app *store.Tour
 		return
 	}
 	lines := []string{
-		fmt.Sprintf("РќРѕРІР°СЏ Р·Р°СЏРІРєР° #%d", app.ApplicationNumber),
+		fmt.Sprintf("Новая заявка #%d", app.ApplicationNumber),
 		"",
 		"Twitch: " + emptyDash(app.TwitchLogin),
 		"Discord: " + emptyDash(app.DiscordUsername),
-		"РљР°РЅР°Р»: " + emptyDash(app.TwitchChannelURL),
-		"Р§Р°СЃРѕРІРѕР№ РїРѕСЏСЃ: " + emptyDash(app.Timezone),
+		"Канал: " + emptyDash(app.TwitchChannelURL),
+		"Часовой пояс: " + emptyDash(app.Timezone),
 		"ref: " + emptyDash(app.Referral),
 	}
 	c.sendBestEffort(ctx, c.supportChannelID, strings.Join(lines, "\n"), nil)
@@ -197,15 +197,15 @@ func (c *Client) NotifyApplicationReviewed(ctx context.Context, app *store.Tourn
 	if !c.SupportEnabled() || app == nil {
 		return
 	}
-	status := "РѕР±РЅРѕРІР»РµРЅР°"
+	status := "обновлена"
 	switch app.Status {
 	case "approved":
-		status = "РѕРґРѕР±СЂРµРЅР°"
+		status = "одобрена"
 	case "rejected":
-		status = "РѕС‚РєР»РѕРЅРµРЅР°"
+		status = "отклонена"
 	}
 	lines := []string{
-		fmt.Sprintf("Р—Р°СЏРІРєР° #%d %s", app.ApplicationNumber, status),
+		fmt.Sprintf("Заявка #%d %s", app.ApplicationNumber, status),
 		"",
 		"Twitch: " + emptyDash(app.TwitchLogin),
 		"Discord: " + emptyDash(app.DiscordUsername),
@@ -218,14 +218,14 @@ func (c *Client) NotifySupportTicket(ctx context.Context, ticket *store.Telegram
 		return
 	}
 	lines := []string{
-		fmt.Sprintf("РќРѕРІРѕРµ РѕР±СЂР°С‰РµРЅРёРµ #%d", ticket.TicketNumber),
+		fmt.Sprintf("Новое обращение #%d", ticket.TicketNumber),
 		"",
-		"РћС‚: " + supportUserLabel(ticket),
+		"От: " + supportUserLabel(ticket),
 		fmt.Sprintf("Telegram chat: %d", ticket.UserChatID),
 		"",
 		ticket.Question,
 		"",
-		fmt.Sprintf("РћС‚РІРµС‚ РІ Telegram: РћС‚РІРµС‚ #%d С‚РµРєСЃС‚ РѕС‚РІРµС‚Р°", ticket.TicketNumber),
+		fmt.Sprintf("Ответ в Telegram: Ответ #%d текст ответа", ticket.TicketNumber),
 	}
 	c.sendBestEffort(ctx, c.supportChannelID, strings.Join(lines, "\n"), nil)
 }
@@ -255,7 +255,7 @@ func (c *Client) NotifyNewsPost(ctx context.Context, post NewsPost) {
 		}
 		fallback := post.Text
 		if len(post.Links) > 0 {
-			fallback += "\n\nРЎСЃС‹Р»РєРё:\n- " + strings.Join(uniqueStrings(post.Links), "\n- ")
+			fallback += "\n\nСсылки:\n- " + strings.Join(uniqueStrings(post.Links), "\n- ")
 		}
 		if content != "" {
 			fallback = content + "\n" + fallback
@@ -288,7 +288,7 @@ func (c *Client) NotifyModUpdate(ctx context.Context, post NewsPost) {
 		}
 		fallback := post.Text
 		if len(post.Links) > 0 {
-			fallback += "\n\nРЎСЃС‹Р»РєРё:\n- " + strings.Join(uniqueStrings(post.Links), "\n- ")
+			fallback += "\n\nСсылки:\n- " + strings.Join(uniqueStrings(post.Links), "\n- ")
 		}
 		if content != "" {
 			fallback = content + "\n" + fallback
@@ -494,7 +494,7 @@ func (c *Client) handleSyncRolesInteraction(ctx context.Context, st *store.Store
 		result, err := c.syncRunnerRoles(syncCtx, st, session)
 		content := ""
 		if err != nil {
-			content = "РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЂРѕР»РµР№ РЅРµ СѓРґР°Р»Р°СЃСЊ: " + err.Error()
+			content = "Синхронизация ролей не удалась: " + err.Error()
 		} else {
 			content = result.roleSyncMessage()
 		}
@@ -537,7 +537,7 @@ func (c *Client) handleSetupChannelsInteraction(ctx context.Context, session *di
 		result, err := c.setupTournamentChannels(setupCtx, session, event)
 		content := ""
 		if err != nil {
-			content = "РќР°СЃС‚СЂРѕР№РєР° РєР°РЅР°Р»РѕРІ Tournament РЅРµ СѓРґР°Р»Р°СЃСЊ: " + err.Error()
+			content = "Настройка каналов Dimension Science: Chaos не удалась: " + err.Error()
 		} else {
 			content = result.channelSetupMessage()
 		}
@@ -578,7 +578,7 @@ func (c *Client) handleGuildMemberAdd(ctx context.Context, st *store.Store, sess
 		}
 	}
 	if matched == nil {
-		c.sendBestEffort(matchCtx, c.supportChannelID, "РќРѕРІС‹Р№ СѓС‡Р°СЃС‚РЅРёРє Discord РІРѕС€РµР» РЅР° СЃРµСЂРІРµСЂ, РЅРѕ РЅРµ РЅР°Р№РґРµРЅ СЃСЂРµРґРё РѕРґРѕР±СЂРµРЅРЅС‹С… Р·Р°СЏРІРѕРє: "+discordMemberLabel(event.Member), nil)
+		c.sendBestEffort(matchCtx, c.supportChannelID, "Новый участник вошёл на сервер, но не найден среди одобренных заявок: "+discordMemberLabel(event.Member), nil)
 		return
 	}
 
@@ -586,7 +586,7 @@ func (c *Client) handleGuildMemberAdd(ctx context.Context, st *store.Store, sess
 		if c.logger != nil {
 			c.logger.Printf("discord role add for %s: %v", event.User.String(), err)
 		}
-		c.sendBestEffort(matchCtx, c.supportChannelID, fmt.Sprintf("РќРµ СѓРґР°Р»РѕСЃСЊ РІС‹РґР°С‚СЊ Tournament Runner РґР»СЏ Р·Р°СЏРІРєРё #%d (%s): %v", matched.ApplicationNumber, discordMemberLabel(event.Member), err), nil)
+		c.sendBestEffort(matchCtx, c.supportChannelID, fmt.Sprintf("Не удалось выдать турнирную роль для заявки #%d (%s): %v", matched.ApplicationNumber, discordMemberLabel(event.Member), err), nil)
 		return
 	}
 
@@ -814,10 +814,10 @@ func (c *Client) sendNewsPost(ctx context.Context, channelID, content string, po
 	description := trimDiscordEmbedDescription(post.Text)
 	links := uniqueStrings(post.Links)
 	if len(links) > 0 {
-		description += "\n\n**РЎСЃС‹Р»РєРё:**\n- " + strings.Join(links, "\n- ")
+		description += "\n\n**Ссылки:**\n- " + strings.Join(links, "\n- ")
 	}
 
-	title := "РќРѕРІРѕСЃС‚СЊ Tournament"
+	title := "Новость Dimension Science"
 	if post.Title != "" {
 		title = post.Title
 	}
@@ -1308,33 +1308,33 @@ func uniqueStrings(values []string) []string {
 
 func (r roleSyncResult) roleSyncMessage() string {
 	lines := []string{
-		"РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЂРѕР»РµР№ Tournament Р·Р°РІРµСЂС€РµРЅР°.",
+		"Синхронизация турнирных ролей завершена.",
 		"",
-		fmt.Sprintf("РћРґРѕР±СЂРµРЅРЅС‹С… Р·Р°СЏРІРѕРє: %d", r.ApprovedApplications),
-		fmt.Sprintf("РџСЂРѕРІРµСЂРµРЅРѕ СѓС‡Р°СЃС‚РЅРёРєРѕРІ Discord: %d", r.ScannedMembers),
-		fmt.Sprintf("Р РѕР»СЊ РІС‹РґР°РЅР° СЃРµР№С‡Р°СЃ: %d", r.Assigned),
-		fmt.Sprintf("Р РѕР»СЊ СѓР¶Рµ Р±С‹Р»Р°: %d", r.AlreadyHadRole),
+		fmt.Sprintf("Одобренных заявок: %d", r.ApprovedApplications),
+		fmt.Sprintf("Проверено участников Discord: %d", r.ScannedMembers),
+		fmt.Sprintf("Роль выдана сейчас: %d", r.Assigned),
+		fmt.Sprintf("Роль уже была: %d", r.AlreadyHadRole),
 	}
 	if len(r.UnmatchedApplicants) > 0 {
-		lines = append(lines, "", fmt.Sprintf("РќРµ РЅР°Р№РґРµРЅРѕ РЅР° СЃРµСЂРІРµСЂРµ РёР»Рё РЅРёРє РЅРµ СЃРѕРІРїР°Р»: %d", len(r.UnmatchedApplicants)))
+		lines = append(lines, "", fmt.Sprintf("Не найдено на сервере или ник не совпал: %d", len(r.UnmatchedApplicants)))
 		limit := len(r.UnmatchedApplicants)
 		if limit > 8 {
 			limit = 8
 		}
 		lines = append(lines, r.UnmatchedApplicants[:limit]...)
 		if len(r.UnmatchedApplicants) > limit {
-			lines = append(lines, fmt.Sprintf("...Рё РµС‰Рµ %d", len(r.UnmatchedApplicants)-limit))
+			lines = append(lines, fmt.Sprintf("...и ещё %d", len(r.UnmatchedApplicants)-limit))
 		}
 	}
 	if len(r.Errors) > 0 {
-		lines = append(lines, "", fmt.Sprintf("РћС€РёР±РєРё РїСЂРё РІС‹РґР°С‡Рµ СЂРѕР»РµР№: %d", len(r.Errors)))
+		lines = append(lines, "", fmt.Sprintf("Ошибки при выдаче ролей: %d", len(r.Errors)))
 		limit := len(r.Errors)
 		if limit > 5 {
 			limit = 5
 		}
 		lines = append(lines, r.Errors[:limit]...)
 		if len(r.Errors) > limit {
-			lines = append(lines, fmt.Sprintf("...Рё РµС‰Рµ %d", len(r.Errors)-limit))
+			lines = append(lines, fmt.Sprintf("...и ещё %d", len(r.Errors)-limit))
 		}
 	}
 	return strings.Join(lines, "\n")
@@ -1342,18 +1342,18 @@ func (r roleSyncResult) roleSyncMessage() string {
 
 func (r channelSetupResult) channelSetupMessage() string {
 	lines := []string{
-		"РљР°РЅР°Р»С‹ Tournament РЅР°СЃС‚СЂРѕРµРЅС‹.",
+		"Каналы Dimension Science: Chaos настроены.",
 		"",
-		"РљР°С‚РµРіРѕСЂРёСЏ: " + emptyDash(r.CategoryName),
-		fmt.Sprintf("РЎРѕР·РґР°РЅРѕ: %d", len(r.Created)),
-		fmt.Sprintf("РћР±РЅРѕРІР»РµРЅРѕ: %d", len(r.Updated)),
+		"Категория: " + emptyDash(r.CategoryName),
+		fmt.Sprintf("Создано: %d", len(r.Created)),
+		fmt.Sprintf("Обновлено: %d", len(r.Updated)),
 	}
 	if len(r.Created) > 0 {
-		lines = append(lines, "", "РЎРѕР·РґР°РЅРЅС‹Рµ РєР°РЅР°Р»С‹:", strings.Join(r.Created, ", "))
+		lines = append(lines, "", "Созданные каналы:", strings.Join(r.Created, ", "))
 	}
 	if len(r.Updated) > 0 {
-		lines = append(lines, "", "РћР±РЅРѕРІР»РµРЅРЅС‹Рµ РєР°РЅР°Р»С‹:", strings.Join(r.Updated, ", "))
+		lines = append(lines, "", "Обновлённые каналы:", strings.Join(r.Updated, ", "))
 	}
-	lines = append(lines, "", "Р’Р°Р¶РЅРѕ: РїРѕР»СЊР·РѕРІР°С‚РµР»Рё СЃ РїСЂР°РІРѕРј Administrator РІ Discord РјРѕРіСѓС‚ РІРёРґРµС‚СЊ Р·Р°РєСЂС‹С‚С‹Рµ РєР°РЅР°Р»С‹ РЅРµР·Р°РІРёСЃРёРјРѕ РѕС‚ РїРµСЂРµР·Р°РїРёСЃРµР№ РїСЂР°РІ.")
+	lines = append(lines, "", "Важно: пользователи с правом Administrator в Discord видят закрытые каналы независимо от настроек доступа.")
 	return strings.Join(lines, "\n")
 }
