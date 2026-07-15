@@ -24,6 +24,16 @@ func (c *Client) handleSetupDSApplicationsInteraction(session *discordgo.Session
 		c.respondEphemeral(session, event, "Команда доступна только администраторам сервера.")
 		return
 	}
+	panel := dsApplicationPanelMessage()
+	if err := session.InteractionRespond(event.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{Embeds: panel.Embeds, Components: panel.Components},
+	}); err != nil && c.logger != nil {
+		c.logger.Printf("discord application panel: %v", err)
+	}
+}
+
+func dsApplicationPanelMessage() *discordgo.MessageSend {
 	embed := &discordgo.MessageEmbed{
 		Title:       "Заявка в Dimension Science: Chaos",
 		Description: "Прочитайте требования и нажмите **Подать заявку**. Ответы увидит только команда Dimension Science. После проверки одобренным участникам автоматически выдаётся роль **Игрок DS | Chaos**.",
@@ -34,12 +44,74 @@ func (c *Client) handleSetupDSApplicationsInteraction(session *discordgo.Session
 		},
 	}
 	button := discordgo.Button{Label: "Подать заявку", Style: discordgo.PrimaryButton, CustomID: componentApplyChaos, Emoji: &discordgo.ComponentEmoji{Name: "📝"}}
-	if err := session.InteractionRespond(event.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{Embeds: []*discordgo.MessageEmbed{embed}, Components: []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{button}}}},
-	}); err != nil && c.logger != nil {
-		c.logger.Printf("discord application panel: %v", err)
+	return &discordgo.MessageSend{Embeds: []*discordgo.MessageEmbed{embed}, Components: []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{button}}}}
+}
+
+func (c *Client) ensureDSApplicationPanel(session *discordgo.Session) error {
+	if session == nil || session.State == nil || session.State.User == nil {
+		return errors.New("Discord session is not ready")
 	}
+	channels, err := session.GuildChannels(c.guildID)
+	if err != nil {
+		return err
+	}
+	var category, applicationChannel *discordgo.Channel
+	for _, channel := range channels {
+		if channel == nil {
+			continue
+		}
+		if channel.Type == discordgo.ChannelTypeGuildCategory && strings.EqualFold(channel.Name, "DIMENSION SCIENCE — ИНФОРМАЦИЯ") {
+			category = channel
+		}
+	}
+	if category == nil {
+		category, err = session.GuildChannelCreateComplex(c.guildID, discordgo.GuildChannelCreateData{Name: "DIMENSION SCIENCE — ИНФОРМАЦИЯ", Type: discordgo.ChannelTypeGuildCategory})
+		if err != nil {
+			return fmt.Errorf("create Dimension Science category: %w", err)
+		}
+	}
+	for _, channel := range channels {
+		if channel != nil && channel.ParentID == category.ID && channel.Type == discordgo.ChannelTypeGuildText && strings.EqualFold(channel.Name, "подать-заявку") {
+			applicationChannel = channel
+			break
+		}
+	}
+	if applicationChannel == nil {
+		guild, loadErr := session.Guild(c.guildID)
+		if loadErr != nil {
+			return loadErr
+		}
+		applicationChannel, err = session.GuildChannelCreateComplex(c.guildID, discordgo.GuildChannelCreateData{
+			Name: "подать-заявку", Type: discordgo.ChannelTypeGuildText, ParentID: category.ID,
+			Topic:                "Подача заявки в Dimension Science: Chaos.",
+			PermissionOverwrites: publicReadOnlyOverwrites(c.guildID, "", "", guild.OwnerID, session.State.User.ID),
+		})
+		if err != nil {
+			return fmt.Errorf("create application channel: %w", err)
+		}
+	}
+	messages, err := session.ChannelMessages(applicationChannel.ID, 50, "", "", "")
+	if err != nil {
+		return err
+	}
+	for _, message := range messages {
+		if message == nil || message.Author == nil || message.Author.ID != session.State.User.ID {
+			continue
+		}
+		for _, component := range message.Components {
+			row, ok := component.(*discordgo.ActionsRow)
+			if !ok {
+				continue
+			}
+			for _, child := range row.Components {
+				if button, ok := child.(*discordgo.Button); ok && button.CustomID == componentApplyChaos {
+					return nil
+				}
+			}
+		}
+	}
+	_, err = session.ChannelMessageSendComplex(applicationChannel.ID, dsApplicationPanelMessage())
+	return err
 }
 
 func (c *Client) handleDSApplicationInteraction(ctx context.Context, st *store.Store, session *discordgo.Session, event *discordgo.InteractionCreate) {

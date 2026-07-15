@@ -327,6 +327,9 @@ func (c *Client) StartRoleSync(ctx context.Context, st *store.Store) {
 			if err := c.registerCommands(session); err != nil && c.logger != nil {
 				c.logger.Printf("discord register commands: %v", err)
 			}
+			if err := c.ensureDSApplicationPanel(session); err != nil && c.logger != nil {
+				c.logger.Printf("discord ensure application panel: %v", err)
+			}
 			go c.ensureSupportChannelPrivate(context.Background(), session)
 		})
 	})
