@@ -175,6 +175,55 @@ CREATE TABLE IF NOT EXISTS tournament_applications (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE SEQUENCE IF NOT EXISTS discord_applications_application_number_seq;
+
+CREATE TABLE IF NOT EXISTS discord_applications (
+  id TEXT PRIMARY KEY,
+  application_number BIGINT NOT NULL DEFAULT nextval('discord_applications_application_number_seq'),
+  guild_id TEXT NOT NULL,
+  discord_user_id TEXT NOT NULL,
+  discord_username TEXT NOT NULL,
+  project_key TEXT NOT NULL DEFAULT 'chaos',
+  game_nick TEXT NOT NULL,
+  timezone TEXT NOT NULL,
+  experience TEXT NOT NULL,
+  motivation TEXT NOT NULL,
+  links TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  reviewer_discord_id TEXT,
+  review_reason TEXT,
+  log_channel_id TEXT,
+  log_message_id TEXT,
+  reviewed_at TIMESTAMPTZ,
+  role_granted_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT discord_applications_status_check
+    CHECK (status IN ('pending', 'needs_info', 'approved', 'rejected', 'cancelled'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS discord_applications_number_idx
+  ON discord_applications (application_number);
+
+CREATE UNIQUE INDEX IF NOT EXISTS discord_applications_active_user_idx
+  ON discord_applications (guild_id, discord_user_id, project_key)
+  WHERE status IN ('pending', 'needs_info', 'approved');
+
+CREATE INDEX IF NOT EXISTS discord_applications_status_created_idx
+  ON discord_applications (status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS discord_application_audit (
+  id TEXT PRIMARY KEY,
+  application_id TEXT NOT NULL REFERENCES discord_applications(id) ON DELETE CASCADE,
+  actor_discord_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  details TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS discord_application_audit_application_idx
+  ON discord_application_audit (application_id, created_at);
+
 CREATE TABLE IF NOT EXISTS mod_nonces (
   nonce TEXT PRIMARY KEY,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

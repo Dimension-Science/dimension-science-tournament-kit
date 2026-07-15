@@ -21,6 +21,7 @@ const discordAPIBase = "https://discord.com/api/v10"
 const (
 	commandSyncRoles               = "sync_roles"
 	commandSetupTournamentChannels = "setup_tournament_channels"
+	commandSetupDSApplications     = "setup_ds_applications"
 )
 
 type Client struct {
@@ -29,8 +30,10 @@ type Client struct {
 	newsChannelID       string
 	modUpdatesChannelID string
 	supportChannelID    string
+	applicationLogID    string
 	moderatorRoleID     string
 	runnerRoleID        string
+	chaosPlayerRoleID   string
 	sessionMu           sync.RWMutex
 	session             *discordgo.Session
 	httpClient          *http.Client
@@ -67,8 +70,10 @@ type Config struct {
 	NewsChannelID       string
 	ModUpdatesChannelID string
 	SupportChannelID    string
+	ApplicationLogID    string
 	ModeratorRoleID     string
 	RunnerRoleID        string
+	ChaosPlayerRoleID   string
 }
 
 type NewsPost struct {
@@ -118,8 +123,10 @@ func New(cfg Config, logger *log.Logger) *Client {
 		newsChannelID:       newsChannel,
 		modUpdatesChannelID: modUpdatesChannel,
 		supportChannelID:    strings.TrimSpace(cfg.SupportChannelID),
+		applicationLogID:    firstConfigured(cfg.ApplicationLogID, cfg.SupportChannelID),
 		moderatorRoleID:     strings.TrimSpace(cfg.ModeratorRoleID),
 		runnerRoleID:        strings.TrimSpace(cfg.RunnerRoleID),
+		chaosPlayerRoleID:   strings.TrimSpace(cfg.ChaosPlayerRoleID),
 		httpClient:          &http.Client{Timeout: 15 * time.Second},
 		logger:              logger,
 	}
@@ -127,6 +134,39 @@ func New(cfg Config, logger *log.Logger) *Client {
 
 func (c *Client) NewsEnabled() bool {
 	return c != nil && c.newsChannelID != ""
+}
+
+func firstConfigured(values ...string) string {
+	for _, value := range values {
+		if value = strings.TrimSpace(value); value != "" {
+			return value
+		}
+	}
+	return ""
+}
+
+func (c *Client) ensureChaosPlayerRole(session *discordgo.Session) error {
+	if c.chaosPlayerRoleID != "" {
+		return nil
+	}
+	roles, err := session.GuildRoles(c.guildID)
+	if err != nil {
+		return err
+	}
+	for _, role := range roles {
+		if role != nil && strings.EqualFold(strings.TrimSpace(role.Name), "Игрок DS | Chaos") {
+			c.chaosPlayerRoleID = role.ID
+			return nil
+		}
+	}
+	color := 0x7C3AED
+	mentionable := true
+	role, err := session.GuildRoleCreate(c.guildID, &discordgo.RoleParams{Name: "Игрок DS | Chaos", Color: &color, Mentionable: &mentionable})
+	if err != nil {
+		return err
+	}
+	c.chaosPlayerRoleID = role.ID
+	return nil
 }
 
 func (c *Client) ModUpdatesEnabled() bool {
@@ -281,6 +321,9 @@ func (c *Client) StartRoleSync(ctx context.Context, st *store.Store) {
 			c.logger.Printf("discord bot connected as %s", ready.User.String())
 		}
 		registerOnce.Do(func() {
+			if err := c.ensureChaosPlayerRole(session); err != nil && c.logger != nil {
+				c.logger.Printf("discord ensure Chaos player role: %v", err)
+			}
 			if err := c.registerCommands(session); err != nil && c.logger != nil {
 				c.logger.Printf("discord register commands: %v", err)
 			}
@@ -368,6 +411,12 @@ func (c *Client) registerCommands(session *discordgo.Session) error {
 				},
 			},
 		},
+		{
+			Name:                     commandSetupDSApplications,
+			Description:              "Опубликовать панель заявок Dimension Science: Chaos",
+			DefaultMemberPermissions: &adminPermission,
+			DMPermission:             &dmPermission,
+		},
 	}
 
 	commands, err := session.ApplicationCommands(session.State.User.ID, c.guildID)
@@ -395,7 +444,11 @@ func (c *Client) registerCommands(session *discordgo.Session) error {
 }
 
 func (c *Client) handleInteraction(ctx context.Context, st *store.Store, session *discordgo.Session, event *discordgo.InteractionCreate) {
-	if event == nil || event.GuildID != c.guildID || event.Type != discordgo.InteractionApplicationCommand {
+	if event == nil || event.GuildID != c.guildID {
+		return
+	}
+	if event.Type != discordgo.InteractionApplicationCommand {
+		c.handleDSApplicationInteraction(ctx, st, session, event)
 		return
 	}
 	switch event.ApplicationCommandData().Name {
@@ -403,6 +456,8 @@ func (c *Client) handleInteraction(ctx context.Context, st *store.Store, session
 		c.handleSyncRolesInteraction(ctx, st, session, event)
 	case commandSetupTournamentChannels:
 		c.handleSetupChannelsInteraction(ctx, session, event)
+	case commandSetupDSApplications:
+		c.handleSetupDSApplicationsInteraction(session, event)
 	}
 }
 
@@ -623,8 +678,8 @@ func (c *Client) setupTournamentChannels(ctx context.Context, session *discordgo
 	if c == nil || session == nil || event == nil {
 		return result, fmt.Errorf("discord channel setup is not configured")
 	}
-	if c.runnerRoleID == "" {
-		return result, fmt.Errorf("DISCORD_RUNNER_ROLE_ID is empty")
+	if c.chaosPlayerRoleID == "" {
+		return result, fmt.Errorf("Chaos player role is not configured")
 	}
 	if session.State == nil || session.State.User == nil {
 		return result, fmt.Errorf("discord bot user is not ready")
@@ -667,12 +722,12 @@ func (c *Client) setupTournamentChannels(ctx context.Context, session *discordgo
 			return result, ctx.Err()
 		default:
 		}
-		if spec.NeedsRunner && c.runnerRoleID == "" {
+		if spec.NeedsRunner && c.chaosPlayerRoleID == "" {
 			continue
 		}
 		key := tournamentChannelKey(spec.Name, spec.Type)
 		if existing := existingByKey[key]; existing != nil {
-			permissions := spec.Permissions(c.guildID, c.runnerRoleID, c.moderatorRoleID, ownerID, session.State.User.ID)
+			permissions := spec.Permissions(c.guildID, c.chaosPlayerRoleID, c.moderatorRoleID, ownerID, session.State.User.ID)
 			if c.supportChannelID != "" && existing.ID == c.supportChannelID {
 				permissions = ownerBotOnlyTextOverwrites(c.guildID, "", "", ownerID, session.State.User.ID)
 			}
@@ -689,7 +744,7 @@ func (c *Client) setupTournamentChannels(ctx context.Context, session *discordgo
 			continue
 		}
 
-		permissions := spec.Permissions(c.guildID, c.runnerRoleID, c.moderatorRoleID, ownerID, session.State.User.ID)
+		permissions := spec.Permissions(c.guildID, c.chaosPlayerRoleID, c.moderatorRoleID, ownerID, session.State.User.ID)
 		created, err := session.GuildChannelCreateComplex(c.guildID, discordgo.GuildChannelCreateData{
 			Name:                 spec.Name,
 			Type:                 spec.Type,
@@ -712,11 +767,11 @@ func (c *Client) setupTournamentChannels(ctx context.Context, session *discordgo
 }
 
 func (c *Client) announceTournamentChannels(ctx context.Context, channels map[string]*discordgo.Channel) {
-	if c == nil || c.runnerRoleID == "" {
+	if c == nil || c.chaosPlayerRoleID == "" {
 		return
 	}
 	newsChannelID := c.newsChannelID
-	if channel := channels["РЅРѕРІРѕСЃС‚Рё-С‚СѓСЂРЅРёСЂР°"]; channel != nil && channel.ID != "" {
+	if channel := channels["chaos-новости"]; channel != nil && channel.ID != "" {
 		newsChannelID = channel.ID
 	}
 	if newsChannelID == "" {
@@ -724,19 +779,19 @@ func (c *Client) announceTournamentChannels(ctx context.Context, channels map[st
 	}
 
 	lines := []string{
-		"<@&" + c.runnerRoleID + ">",
+		"<@&" + c.chaosPlayerRoleID + ">",
 		"",
-		"РљР°РЅР°Р»С‹ Tournament РіРѕС‚РѕРІС‹. Р—РґРµСЃСЊ Р±СѓРґСѓС‚ РЅРѕРІРѕСЃС‚Рё С‚СѓСЂРЅРёСЂР°, РѕР±РЅРѕРІР»РµРЅРёСЏ РјРѕРґР° Рё РєРѕРѕСЂРґРёРЅР°С†РёСЏ СЂР°РЅРЅРµСЂРѕРІ.",
+		"Раздел Dimension Science: Chaos готов. Здесь будут новости, обновления и координация игроков.",
 		"",
 	}
-	for _, name := range []string{"РЅРѕРІРѕСЃС‚Рё-С‚СѓСЂРЅРёСЂР°", "РѕР±РЅРѕРІР»РµРЅРёСЏ-РјРѕРґР°", "С‡Р°С‚-СЂР°РЅРЅРµСЂРѕРІ", "РіРѕР»РѕСЃРѕРІРѕР№-РєР°РЅР°Р»"} {
+	for _, name := range []string{"chaos-новости", "chaos-информация", "chaos-обновления", "chaos-чат", "Chaos"} {
 		channel := channels[name]
 		if channel == nil || channel.ID == "" {
 			continue
 		}
 		lines = append(lines, fmt.Sprintf("- %s: <#%s>", name, channel.ID))
 	}
-	c.sendBestEffort(ctx, newsChannelID, strings.Join(lines, "\n"), []string{c.runnerRoleID})
+	c.sendBestEffort(ctx, newsChannelID, strings.Join(lines, "\n"), []string{c.chaosPlayerRoleID})
 }
 
 func (c *Client) sendBestEffort(ctx context.Context, channelID, content string, allowedRoleIDs []string) {
@@ -866,62 +921,56 @@ func (c *Client) staffRoleIDs(ctx context.Context, session *discordgo.Session) [
 func tournamentChannelSpecs() []tournamentChannelSpec {
 	return []tournamentChannelSpec{
 		{
-			Name:  "Р·Р°СЏРІРєР°",
+			Name:  "chaos-информация",
 			Type:  discordgo.ChannelTypeGuildText,
-			Topic: "Р—Р°РєСЂС‹С‚С‹Р№ РєР°РЅР°Р» РґР»СЏ РІРѕРїСЂРѕСЃРѕРІ РїРѕ СѓС‡Р°СЃС‚РёСЋ РІ Tournament. Р”РѕСЃС‚СѓРїРµРЅ С‚РѕР»СЊРєРѕ Tournament Runner, РІР»Р°РґРµР»СЊС†Сѓ Рё Р±РѕС‚Сѓ.",
+			Topic: "Правила и информация для игроков Dimension Science: Chaos.",
 			StarterText: strings.Join([]string{
-				"Р—Р°СЏРІРєРё РЅР° С‚СѓСЂРЅРёСЂ РїРѕРґР°СЋС‚СЃСЏ С‡РµСЂРµР· СЃР°Р№С‚ Tournament.",
+				"Добро пожаловать в Dimension Science: Chaos.",
 				"",
-				"Р—РґРµСЃСЊ РјРѕР¶РЅРѕ СѓС‚РѕС‡РЅСЏС‚СЊ РІРѕРїСЂРѕСЃС‹ РїРѕ СѓС‡Р°СЃС‚РёСЋ РїРѕСЃР»Рµ РїРѕР»СѓС‡РµРЅРёСЏ РґРѕСЃС‚СѓРїР°.",
+				"Этот раздел доступен одобренным игрокам. Следите за объявлениями команды проекта.",
 			}, "\n"),
-			Permissions: runnerWritableOverwrites,
+			Permissions: runnerReadOnlyOverwrites,
 			NeedsRunner: true,
 		},
 		{
-			Name:        "РЅРѕРІРѕСЃС‚Рё-С‚СѓСЂРЅРёСЂР°",
+			Name:        "chaos-новости",
 			Type:        discordgo.ChannelTypeGuildNews,
-			Topic:       "РћС‚РєСЂС‹С‚С‹Рµ РЅРѕРІРѕСЃС‚Рё Tournament. Р§РёС‚Р°С‚СЊ РјРѕРіСѓС‚ РІСЃРµ, РїРёСЃР°С‚СЊ РјРѕР¶РµС‚ С‚РѕР»СЊРєРѕ РєРѕРјР°РЅРґР° С‚СѓСЂРЅРёСЂР° Рё Р±РѕС‚.",
-			Permissions: publicReadOnlyOverwrites,
+			Topic:       "Новости направления Dimension Science: Chaos.",
+			Permissions: runnerReadOnlyOverwrites,
+			NeedsRunner: true,
 		},
 		{
-			Name:        "РїРѕРґРґРµСЂР¶РєР°-tournament",
+			Name:        "chaos-поддержка",
 			Type:        discordgo.ChannelTypeGuildText,
-			Topic:       "Р—Р°РєСЂС‹С‚С‹Р№ С‡Р°С‚ РїРѕРґРґРµСЂР¶РєРё РґР»СЏ СѓС‡Р°СЃС‚РЅРёРєРѕРІ С‚СѓСЂРЅРёСЂР°.",
+			Topic:       "Вопросы одобренных игроков к команде Chaos.",
 			Permissions: runnerWritableOverwrites,
 			NeedsRunner: true,
 		},
 		{
-			Name:        "РѕР±РЅРѕРІР»РµРЅРёСЏ-РјРѕРґР°",
+			Name:        "chaos-обновления",
 			Type:        discordgo.ChannelTypeGuildText,
-			Topic:       "Р¤РёРєСЃС‹ Рё РѕР±РЅРѕРІР»РµРЅРёСЏ РѕС„РёС†РёР°Р»СЊРЅС‹С… РјРѕРґРѕРІ Tournament. Р”РѕСЃС‚СѓРїРЅРѕ С‚РѕР»СЊРєРѕ Tournament Runner, РІР»Р°РґРµР»СЊС†Сѓ Рё Р±РѕС‚Сѓ.",
+			Topic:       "Обновления, сборки и технические объявления Chaos.",
+			Permissions: runnerReadOnlyOverwrites,
+			NeedsRunner: true,
+		},
+		{
+			Name:        "chaos-чат",
+			Type:        discordgo.ChannelTypeGuildText,
+			Topic:       "Закрытый чат игроков DS | Chaos.",
 			Permissions: runnerWritableOverwrites,
 			NeedsRunner: true,
 		},
 		{
-			Name:        "С‡Р°С‚-СЂР°РЅРЅРµСЂРѕРІ",
-			Type:        discordgo.ChannelTypeGuildText,
-			Topic:       "Р—Р°РєСЂС‹С‚С‹Р№ С‡Р°С‚ СѓС‡Р°СЃС‚РЅРёРєРѕРІ С‚СѓСЂРЅРёСЂР°.",
-			Permissions: runnerWritableOverwrites,
-			NeedsRunner: true,
-		},
-		{
-			Name:        "РіРѕР»РѕСЃРѕРІРѕР№-РєР°РЅР°Р»",
+			Name:        "Chaos",
 			Type:        discordgo.ChannelTypeGuildVoice,
 			Permissions: runnerVoiceOverwrites,
 			NeedsRunner: true,
 		},
 		{
-			Name:        "С‚РµС…РїРѕРґРґРµСЂР¶РєР°",
+			Name:        "chaos-бот-лог",
 			Type:        discordgo.ChannelTypeGuildText,
-			Topic:       "Р—Р°РєСЂС‹С‚С‹Р№ РєР°РЅР°Р» С‚РµС…РїРѕРґРґРµСЂР¶РєРё РґР»СЏ СѓС‡Р°СЃС‚РЅРёРєРѕРІ С‚СѓСЂРЅРёСЂР°.",
-			Permissions: runnerWritableOverwrites,
-			NeedsRunner: true,
-		},
-		{
-			Name:        "Р±РѕС‚-СЃР»СѓР¶РµР±РЅС‹Р№",
-			Type:        discordgo.ChannelTypeGuildText,
-			Topic:       "Р›РѕРіРё Рё СЃР»СѓР¶РµР±РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ Tournament-Р±РѕС‚Р°. Р”РѕСЃС‚СѓРїРµРЅ РІР»Р°РґРµР»СЊС†Сѓ СЃРµСЂРІРµСЂР° Рё Р±РѕС‚Сѓ.",
-			Permissions: ownerBotOnlyTextOverwrites,
+			Topic:       "Служебные сообщения Dimension Science: Chaos.",
+			Permissions: staffPrivateTextOverwrites,
 		},
 	}
 }

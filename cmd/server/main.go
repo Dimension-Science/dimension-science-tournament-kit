@@ -53,8 +53,10 @@ func main() {
 		NewsChannelID:       cfg.DiscordNewsChannelID,
 		ModUpdatesChannelID: cfg.DiscordModUpdatesChannelID,
 		SupportChannelID:    cfg.DiscordSupportID,
+		ApplicationLogID:    cfg.DiscordApplicationLogID,
 		ModeratorRoleID:     cfg.DiscordModeratorRoleID,
 		RunnerRoleID:        cfg.DiscordRunnerRoleID,
+		ChaosPlayerRoleID:   cfg.DiscordChaosPlayerRoleID,
 	}, log.Default())
 
 	server, err := web.NewServer(cfg, db, discord)

@@ -54,8 +54,10 @@ type Config struct {
 	DiscordNewsChannelID       string
 	DiscordModUpdatesChannelID string
 	DiscordSupportID           string
+	DiscordApplicationLogID    string
 	DiscordModeratorRoleID     string
 	DiscordRunnerRoleID        string
+	DiscordChaosPlayerRoleID   string
 	AllowedOrigins             map[string]struct{}
 	UploadDir                  string
 	MaxAvatarBytes             int64
@@ -92,8 +94,10 @@ func Load() (Config, error) {
 		DiscordNewsChannelID:       strings.TrimSpace(os.Getenv("DISCORD_NEWS_CHANNEL_ID")),
 		DiscordModUpdatesChannelID: strings.TrimSpace(os.Getenv("DISCORD_MOD_UPDATES_CHANNEL_ID")),
 		DiscordSupportID:           strings.TrimSpace(os.Getenv("DISCORD_SUPPORT_CHANNEL_ID")),
+		DiscordApplicationLogID:    strings.TrimSpace(os.Getenv("DISCORD_APPLICATION_LOG_CHANNEL_ID")),
 		DiscordModeratorRoleID:     strings.TrimSpace(os.Getenv("DISCORD_MODERATOR_ROLE_ID")),
 		DiscordRunnerRoleID:        strings.TrimSpace(os.Getenv("DISCORD_RUNNER_ROLE_ID")),
+		DiscordChaosPlayerRoleID:   strings.TrimSpace(os.Getenv("DISCORD_CHAOS_PLAYER_ROLE_ID")),
 		MaxAvatarBytes:             int64(envInt("MAX_AVATAR_BYTES", 2*1024*1024)),
 		AllowDevMockAuth:           envBool("ALLOW_DEV_MOCK_AUTH", true),
 		TwitchClientID:             strings.TrimSpace(os.Getenv("TWITCH_CLIENT_ID")),
@@ -165,6 +169,15 @@ func Load() (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if value = strings.TrimSpace(value); value != "" {
+			return value
+		}
+	}
+	return ""
 }
 
 func (c Config) IsProduction() bool {
