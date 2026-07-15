@@ -24,12 +24,25 @@ func (c *Client) handleSetupDSApplicationsInteraction(session *discordgo.Session
 		c.respondEphemeral(session, event, "Команда доступна только администраторам сервера.")
 		return
 	}
-	panel := dsApplicationPanelMessage()
 	if err := session.InteractionRespond(event.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{Embeds: panel.Embeds, Components: panel.Components},
-	}); err != nil && c.logger != nil {
-		c.logger.Printf("discord application panel: %v", err)
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{Flags: discordgo.MessageFlagsEphemeral},
+	}); err != nil {
+		if c.logger != nil {
+			c.logger.Printf("discord application panel defer: %v", err)
+		}
+		return
+	}
+	panel := dsApplicationPanelMessage()
+	if _, err := session.ChannelMessageSendComplex(event.ChannelID, panel); err != nil {
+		content := "Не удалось опубликовать панель заявок: " + err.Error()
+		if _, editErr := session.InteractionResponseEdit(event.Interaction, &discordgo.WebhookEdit{Content: &content}); editErr != nil && c.logger != nil {
+			c.logger.Printf("discord application panel response edit: %v", editErr)
+		}
+		return
+	}
+	if err := session.InteractionResponseDelete(event.Interaction); err != nil && c.logger != nil {
+		c.logger.Printf("discord application panel defer delete: %v", err)
 	}
 }
 
