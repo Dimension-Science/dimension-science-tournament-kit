@@ -390,20 +390,20 @@ func (c *Client) registerCommands(session *discordgo.Session) error {
 	commandsToRegister := []*discordgo.ApplicationCommand{
 		{
 			Name:                     commandSyncRoles,
-			Description:              "Р’С‹РґР°С‚СЊ Tournament Runner СѓС‡Р°СЃС‚РЅРёРєР°Рј РёР· РѕРґРѕР±СЂРµРЅРЅС‹С… Р·Р°СЏРІРѕРє",
+			Description:              "Синхронизировать старые турнирные роли",
 			DefaultMemberPermissions: &adminPermission,
 			DMPermission:             &dmPermission,
 		},
 		{
 			Name:                     commandSetupTournamentChannels,
-			Description:              "РЎРѕР·РґР°С‚СЊ Рё РЅР°СЃС‚СЂРѕРёС‚СЊ РєР°РЅР°Р»С‹ Tournament РІ РІС‹Р±СЂР°РЅРЅРѕР№ РєР°С‚РµРіРѕСЂРёРё",
+			Description:              "Создать каналы Dimension Science: Chaos",
 			DefaultMemberPermissions: &adminPermission,
 			DMPermission:             &dmPermission,
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionChannel,
 					Name:        "category",
-					Description: "РљР°С‚РµРіРѕСЂРёСЏ, РєСѓРґР° СЃРѕР·РґР°С‚СЊ РєР°РЅР°Р»С‹. Р•СЃР»Рё РїСѓСЃС‚Рѕ, РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‚РµРєСѓС‰Р°СЏ РєР°С‚РµРіРѕСЂРёСЏ.",
+					Description: "Категория для каналов Chaos",
 					Required:    false,
 					ChannelTypes: []discordgo.ChannelType{
 						discordgo.ChannelTypeGuildCategory,
