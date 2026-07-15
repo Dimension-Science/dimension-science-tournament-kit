@@ -39,7 +39,7 @@ func dsApplicationPanelMessage() *discordgo.MessageSend {
 		Description: "Прочитайте требования и нажмите **Подать заявку**. Ответы увидит только команда Dimension Science. После проверки одобренным участникам автоматически выдаётся роль **Игрок DS | Chaos**.",
 		Color:       0x7C3AED,
 		Fields: []*discordgo.MessageEmbedField{
-			{Name: "Перед отправкой", Value: "Подготовьте игровой ник, часовой пояс, краткое описание опыта и мотивацию."},
+			{Name: "Перед отправкой", Value: "Подготовьте игровой ник, часовой пояс и краткое описание опыта. Мотивацию можно указать по желанию."},
 			{Name: "Обработка", Value: "Одновременно может быть активна только одна заявка. Решение придёт личным сообщением, если личные сообщения доступны."},
 		},
 	}
@@ -142,7 +142,7 @@ func (c *Client) openChaosApplicationModal(session *discordgo.Session, event *di
 		textInputRow("game_nick", "Игровой ник", "Ваш ник в Minecraft", discordgo.TextInputShort, 2, 32, true),
 		textInputRow("timezone", "Часовой пояс", "Например: UTC+5", discordgo.TextInputShort, 2, 32, true),
 		textInputRow("experience", "Опыт", "Расскажите кратко об опыте игры или участия", discordgo.TextInputParagraph, 10, 600, true),
-		textInputRow("motivation", "Почему хотите присоединиться?", "Несколько предложений", discordgo.TextInputParagraph, 10, 700, true),
+		textInputRow("motivation", "Почему хотите присоединиться? (необязательно)", "Можно оставить пустым", discordgo.TextInputParagraph, 0, 700, false),
 		textInputRow("links", "Ссылки (необязательно)", "Twitch, YouTube или профиль", discordgo.TextInputShort, 0, 300, false),
 	}
 	_ = session.InteractionRespond(event.Interaction, &discordgo.InteractionResponse{Type: discordgo.InteractionResponseModal, Data: &discordgo.InteractionResponseData{CustomID: modalApplyChaos, Title: "Заявка DS | Chaos", Components: fields}})
