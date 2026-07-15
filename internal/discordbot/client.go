@@ -34,6 +34,9 @@ type Client struct {
 	moderatorRoleID     string
 	runnerRoleID        string
 	chaosPlayerRoleID   string
+	siteBaseURL         string
+	siteInternalToken   string
+	siteCampaignSlug    string
 	sessionMu           sync.RWMutex
 	session             *discordgo.Session
 	httpClient          *http.Client
@@ -74,6 +77,9 @@ type Config struct {
 	ModeratorRoleID     string
 	RunnerRoleID        string
 	ChaosPlayerRoleID   string
+	SiteBaseURL         string
+	SiteInternalToken   string
+	SiteCampaignSlug    string
 }
 
 type NewsPost struct {
@@ -127,6 +133,9 @@ func New(cfg Config, logger *log.Logger) *Client {
 		moderatorRoleID:     strings.TrimSpace(cfg.ModeratorRoleID),
 		runnerRoleID:        strings.TrimSpace(cfg.RunnerRoleID),
 		chaosPlayerRoleID:   strings.TrimSpace(cfg.ChaosPlayerRoleID),
+		siteBaseURL:         strings.TrimRight(strings.TrimSpace(cfg.SiteBaseURL), "/"),
+		siteInternalToken:   strings.TrimSpace(cfg.SiteInternalToken),
+		siteCampaignSlug:    firstConfigured(cfg.SiteCampaignSlug, "chaos"),
 		httpClient:          &http.Client{Timeout: 15 * time.Second},
 		logger:              logger,
 	}

@@ -57,6 +57,9 @@ func main() {
 		ModeratorRoleID:     cfg.DiscordModeratorRoleID,
 		RunnerRoleID:        cfg.DiscordRunnerRoleID,
 		ChaosPlayerRoleID:   cfg.DiscordChaosPlayerRoleID,
+		SiteBaseURL:         cfg.DimensionSiteBaseURL,
+		SiteInternalToken:   cfg.DimensionSiteInternalToken,
+		SiteCampaignSlug:    cfg.DimensionSiteCampaignSlug,
 	}, log.Default())
 
 	server, err := web.NewServer(cfg, db, discord)

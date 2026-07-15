@@ -182,6 +182,7 @@ func (c *Client) submitChaosApplication(ctx context.Context, st *store.Store, se
 		return
 	}
 	_ = st.SetDiscordApplicationLogMessage(ctx, app.ID, message.ChannelID, message.ID)
+	c.syncSiteApplicationAsync(app)
 	c.respondEphemeral(session, event, fmt.Sprintf("Заявка **DSC-%05d** принята и отправлена на рассмотрение.", app.ApplicationNumber))
 }
 
@@ -215,6 +216,7 @@ func (c *Client) approveChaosApplication(ctx context.Context, st *store.Store, s
 		return
 	}
 	c.updateReviewMessage(session, event, updated)
+	c.syncSiteApplicationAsync(updated)
 	c.sendApplicantDM(session, app.DiscordUserID, fmt.Sprintf("Ваша заявка DSC-%05d одобрена. Вам выдана роль **Игрок DS | Chaos**.", app.ApplicationNumber))
 }
 
@@ -243,6 +245,7 @@ func (c *Client) rejectChaosApplication(ctx context.Context, st *store.Store, se
 	if app.LogChannelID != "" && app.LogMessageID != "" {
 		_, _ = session.ChannelMessageEditComplex(&discordgo.MessageEdit{Channel: app.LogChannelID, ID: app.LogMessageID, Embeds: &[]*discordgo.MessageEmbed{applicationEmbed(app)}, Components: &[]discordgo.MessageComponent{}})
 	}
+	c.syncSiteApplicationAsync(app)
 	c.sendApplicantDM(session, app.DiscordUserID, fmt.Sprintf("Ваша заявка DSC-%05d отклонена. Причина: %s", app.ApplicationNumber, reason))
 }
 
@@ -332,6 +335,7 @@ func (c *Client) SubmitExternalApplication(ctx context.Context, st *store.Store,
 	if err := st.SetDiscordApplicationLogMessage(ctx, app.ID, message.ChannelID, message.ID); err != nil {
 		return app, err
 	}
+	c.syncSiteApplicationAsync(app)
 	return app, nil
 }
 
@@ -376,6 +380,7 @@ func (c *Client) ReviewApplicationFromAdmin(ctx context.Context, st *store.Store
 		components := []discordgo.MessageComponent{}
 		_, _ = session.ChannelMessageEditComplex(&discordgo.MessageEdit{Channel: updated.LogChannelID, ID: updated.LogMessageID, Embeds: &embeds, Components: &components})
 	}
+	c.syncSiteApplicationAsync(updated)
 	if status == "approved" {
 		c.sendApplicantDM(session, updated.DiscordUserID, fmt.Sprintf("Ваша заявка DSC-%05d одобрена. Вам выдана роль **Игрок DS | Chaos**.", updated.ApplicationNumber))
 	} else {

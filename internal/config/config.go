@@ -58,6 +58,9 @@ type Config struct {
 	DiscordModeratorRoleID     string
 	DiscordRunnerRoleID        string
 	DiscordChaosPlayerRoleID   string
+	DimensionSiteBaseURL       string
+	DimensionSiteInternalToken string
+	DimensionSiteCampaignSlug  string
 	AllowedOrigins             map[string]struct{}
 	UploadDir                  string
 	MaxAvatarBytes             int64
@@ -98,6 +101,9 @@ func Load() (Config, error) {
 		DiscordModeratorRoleID:     strings.TrimSpace(os.Getenv("DISCORD_MODERATOR_ROLE_ID")),
 		DiscordRunnerRoleID:        strings.TrimSpace(os.Getenv("DISCORD_RUNNER_ROLE_ID")),
 		DiscordChaosPlayerRoleID:   strings.TrimSpace(os.Getenv("DISCORD_CHAOS_PLAYER_ROLE_ID")),
+		DimensionSiteBaseURL:       strings.TrimRight(strings.TrimSpace(os.Getenv("DIMENSION_SITE_BASE_URL")), "/"),
+		DimensionSiteInternalToken: strings.TrimSpace(os.Getenv("DIMENSION_SITE_INTERNAL_TOKEN")),
+		DimensionSiteCampaignSlug:  env("DIMENSION_SITE_CAMPAIGN_SLUG", "chaos"),
 		MaxAvatarBytes:             int64(envInt("MAX_AVATAR_BYTES", 2*1024*1024)),
 		AllowDevMockAuth:           envBool("ALLOW_DEV_MOCK_AUTH", true),
 		TwitchClientID:             strings.TrimSpace(os.Getenv("TWITCH_CLIENT_ID")),
