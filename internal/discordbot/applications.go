@@ -39,7 +39,7 @@ func dsApplicationPanelMessage() *discordgo.MessageSend {
 		Description: "Прочитайте требования и нажмите **Подать заявку**. Ответы увидит только команда Dimension Science. После проверки одобренным участникам автоматически выдаётся роль **Игрок DS | Chaos**.",
 		Color:       0x7C3AED,
 		Fields: []*discordgo.MessageEmbedField{
-			{Name: "Перед отправкой", Value: "Подготовьте игровой ник, часовой пояс и краткое описание опыта. Мотивацию можно указать по желанию."},
+			{Name: "Перед отправкой", Value: "Подготовьте игровой ник, часовой пояс и укажите, сколько лет вы играете. Мотивацию можно добавить по желанию."},
 			{Name: "Обработка", Value: "Одновременно может быть активна только одна заявка. Решение придёт личным сообщением, если личные сообщения доступны."},
 		},
 	}
@@ -141,7 +141,7 @@ func (c *Client) openChaosApplicationModal(session *discordgo.Session, event *di
 	fields := []discordgo.MessageComponent{
 		textInputRow("game_nick", "Игровой ник", "Ваш ник в Minecraft", discordgo.TextInputShort, 2, 32, true),
 		textInputRow("timezone", "Часовой пояс", "Например: UTC+5", discordgo.TextInputShort, 2, 32, true),
-		textInputRow("experience", "Опыт", "Расскажите кратко об опыте игры или участия", discordgo.TextInputParagraph, 10, 600, true),
+		textInputRow("experience", "Сколько лет играете?", "Например: 2 года", discordgo.TextInputShort, 1, 50, true),
 		textInputRow("motivation", "Почему хотите присоединиться? (необязательно)", "Можно оставить пустым", discordgo.TextInputParagraph, 0, 700, false),
 		textInputRow("links", "Ссылки (необязательно)", "Twitch, YouTube или профиль", discordgo.TextInputShort, 0, 300, false),
 	}
@@ -262,7 +262,7 @@ func applicationEmbed(app *store.DiscordApplication) *discordgo.MessageEmbed {
 	fields := []*discordgo.MessageEmbedField{
 		{Name: "Discord", Value: fmt.Sprintf("<@%s> (`%s`)", app.DiscordUserID, app.DiscordUserID), Inline: false},
 		{Name: "Игровой ник", Value: safeField(app.GameNick), Inline: true}, {Name: "Часовой пояс", Value: safeField(app.Timezone), Inline: true},
-		{Name: "Опыт", Value: safeField(app.Experience)}, {Name: "Мотивация", Value: safeField(app.Motivation)}, {Name: "Ссылки", Value: safeField(app.Links)},
+		{Name: "Стаж игры", Value: safeField(app.Experience)}, {Name: "Мотивация", Value: safeField(app.Motivation)}, {Name: "Ссылки", Value: safeField(app.Links)},
 	}
 	if app.ReviewReason != "" {
 		fields = append(fields, &discordgo.MessageEmbedField{Name: "Причина решения", Value: safeField(app.ReviewReason)})
