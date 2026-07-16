@@ -213,24 +213,31 @@ func (c *Client) approveChaosApplication(ctx context.Context, st *store.Store, s
 		c.respondEphemeral(session, event, "Эта заявка уже обработана.")
 		return
 	}
-	if strings.TrimSpace(c.chaosPlayerRoleID) == "" {
+	withoutDiscord := strings.HasPrefix(app.DiscordUserID, "telegram:")
+	if !withoutDiscord && strings.TrimSpace(c.chaosPlayerRoleID) == "" {
 		c.respondEphemeral(session, event, "Не настроена роль DISCORD_CHAOS_PLAYER_ROLE_ID.")
 		return
 	}
-	if err := session.GuildMemberRoleAdd(c.guildID, app.DiscordUserID, c.chaosPlayerRoleID); err != nil {
-		c.respondEphemeral(session, event, "Не удалось выдать роль: "+err.Error())
-		return
+	if !withoutDiscord {
+		if err := session.GuildMemberRoleAdd(c.guildID, app.DiscordUserID, c.chaosPlayerRoleID); err != nil {
+			c.respondEphemeral(session, event, "Не удалось выдать роль: "+err.Error())
+			return
+		}
 	}
 	reviewerID := interactionUserID(event)
-	updated, err := st.ReviewDiscordApplication(ctx, id, "approved", reviewerID, "", true)
+	updated, err := st.ReviewDiscordApplication(ctx, id, "approved", reviewerID, "", !withoutDiscord)
 	if err != nil {
-		_ = session.GuildMemberRoleRemove(c.guildID, app.DiscordUserID, c.chaosPlayerRoleID)
+		if !withoutDiscord {
+			_ = session.GuildMemberRoleRemove(c.guildID, app.DiscordUserID, c.chaosPlayerRoleID)
+		}
 		c.respondEphemeral(session, event, "Не удалось зафиксировать решение: "+err.Error())
 		return
 	}
 	c.updateReviewMessage(session, event, updated)
 	c.syncSiteApplicationAsync(updated)
-	c.sendApplicantDM(session, app.DiscordUserID, fmt.Sprintf("Ваша заявка DSC-%05d одобрена. Вам выдана роль **Игрок DS | Chaos**.", app.ApplicationNumber))
+	if !withoutDiscord {
+		c.sendApplicantDM(session, app.DiscordUserID, fmt.Sprintf("Ваша заявка DSC-%05d одобрена. Вам выдана роль **Игрок DS | Chaos**.", app.ApplicationNumber))
+	}
 }
 
 func (c *Client) openRejectModal(session *discordgo.Session, event *discordgo.InteractionCreate, id string) {
@@ -275,8 +282,12 @@ func applicationLogMessage(app *store.DiscordApplication, actions bool) *discord
 
 func applicationEmbed(app *store.DiscordApplication) *discordgo.MessageEmbed {
 	status := map[string]string{"pending": "На рассмотрении", "approved": "Одобрена", "rejected": "Отклонена", "needs_info": "Нужно уточнение"}[app.Status]
+	discordValue := fmt.Sprintf("<@%s> (`%s`)", app.DiscordUserID, app.DiscordUserID)
+	if strings.HasPrefix(app.DiscordUserID, "telegram:") {
+		discordValue = "Не указан · " + safeField(app.DiscordUsername)
+	}
 	fields := []*discordgo.MessageEmbedField{
-		{Name: "Discord", Value: fmt.Sprintf("<@%s> (`%s`)", app.DiscordUserID, app.DiscordUserID), Inline: false},
+		{Name: "Discord", Value: discordValue, Inline: false},
 		{Name: "Игровой ник", Value: safeField(app.GameNick), Inline: true}, {Name: "Часовой пояс", Value: safeField(app.Timezone), Inline: true},
 		{Name: "Стаж игры", Value: safeField(app.Experience)}, {Name: "Мотивация", Value: safeField(app.Motivation)}, {Name: "Ссылки", Value: safeField(app.Links)},
 	}
@@ -312,11 +323,54 @@ func (c *Client) respondEphemeral(session *discordgo.Session, event *discordgo.I
 }
 
 func (c *Client) sendApplicantDM(session *discordgo.Session, userID, content string) {
+	if strings.HasPrefix(userID, "telegram:") {
+		return
+	}
 	channel, err := session.UserChannelCreate(userID)
 	if err != nil {
 		return
 	}
 	_, _ = session.ChannelMessageSend(channel.ID, content)
+}
+
+// ResolveGuildMemberID hides Discord's internal numeric IDs from applicants.
+// A Telegram applicant can provide the username they already see in Discord.
+func (c *Client) ResolveGuildMemberID(username string) (string, error) {
+	if c == nil {
+		return "", errors.New("Discord bot is disabled")
+	}
+	username = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(username), "@"))
+	if len([]rune(username)) < 2 || len([]rune(username)) > 32 {
+		return "", errors.New("invalid Discord username")
+	}
+	c.sessionMu.RLock()
+	session := c.session
+	c.sessionMu.RUnlock()
+	if session == nil {
+		return "", errors.New("Discord bot is not connected")
+	}
+	members, err := session.GuildMembersSearch(c.guildID, username, 100)
+	if err != nil {
+		return "", err
+	}
+	var matches []*discordgo.Member
+	for _, member := range members {
+		if member == nil || member.User == nil {
+			continue
+		}
+		if strings.EqualFold(member.User.Username, username) ||
+			strings.EqualFold(member.User.GlobalName, username) ||
+			strings.EqualFold(member.Nick, username) {
+			matches = append(matches, member)
+		}
+	}
+	if len(matches) == 0 {
+		return "", errors.New("Discord member not found")
+	}
+	if len(matches) > 1 {
+		return "", errors.New("Discord username is ambiguous")
+	}
+	return matches[0].User.ID, nil
 }
 
 // SubmitExternalApplication accepts applications collected by another trusted
@@ -372,7 +426,7 @@ func (c *Client) ReviewApplicationFromAdmin(ctx context.Context, st *store.Store
 		return nil, err
 	}
 	roleGranted := false
-	if status == "approved" {
+	if status == "approved" && !strings.HasPrefix(app.DiscordUserID, "telegram:") {
 		if c.chaosPlayerRoleID == "" {
 			return nil, errors.New("DISCORD_CHAOS_PLAYER_ROLE_ID is empty")
 		}
@@ -394,7 +448,7 @@ func (c *Client) ReviewApplicationFromAdmin(ctx context.Context, st *store.Store
 		_, _ = session.ChannelMessageEditComplex(&discordgo.MessageEdit{Channel: updated.LogChannelID, ID: updated.LogMessageID, Embeds: &embeds, Components: &components})
 	}
 	c.syncSiteApplicationAsync(updated)
-	if status == "approved" {
+	if status == "approved" && roleGranted {
 		c.sendApplicantDM(session, updated.DiscordUserID, fmt.Sprintf("Ваша заявка DSC-%05d одобрена. Вам выдана роль **Игрок DS | Chaos**.", updated.ApplicationNumber))
 	} else {
 		c.sendApplicantDM(session, updated.DiscordUserID, fmt.Sprintf("Ваша заявка DSC-%05d отклонена. Причина: %s", updated.ApplicationNumber, safeField(reason)))

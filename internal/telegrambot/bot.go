@@ -47,13 +47,14 @@ type Bot struct {
 }
 
 type telegramChaosApplicationDraft struct {
-	Step       int
-	GameNick   string
-	Timezone   string
-	Experience string
-	DiscordID  string
-	Motivation string
-	Links      string
+	Step            int
+	GameNick        string
+	Timezone        string
+	Experience      string
+	DiscordID       string
+	DiscordUsername string
+	Motivation      string
+	Links           string
 }
 
 type updateResponse struct {
@@ -448,7 +449,7 @@ func (b *Bot) restoreChaosApplicationDraft(ctx context.Context, chatID int64) *t
 	}
 	draft := &telegramChaosApplicationDraft{
 		Step: stored.Step, GameNick: stored.GameNick, Timezone: stored.Timezone,
-		Experience: stored.Experience, DiscordID: stored.DiscordID,
+		Experience: stored.Experience, DiscordID: stored.DiscordID, DiscordUsername: stored.DiscordUsername,
 		Motivation: stored.Motivation, Links: stored.Links,
 	}
 	b.chaosApplications[chatID] = draft
@@ -462,7 +463,7 @@ func (b *Bot) saveChaosApplicationDraft(ctx context.Context, chatID int64, draft
 	}
 	err := b.store.SaveTelegramChaosApplicationDraft(ctx, store.TelegramChaosApplicationDraft{
 		ChatID: chatID, Step: draft.Step, GameNick: draft.GameNick, Timezone: draft.Timezone,
-		Experience: draft.Experience, DiscordID: draft.DiscordID,
+		Experience: draft.Experience, DiscordID: draft.DiscordID, DiscordUsername: draft.DiscordUsername,
 		Motivation: draft.Motivation, Links: draft.Links,
 	})
 	if err != nil {
@@ -506,13 +507,28 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 		draft.Experience = strings.TrimSpace(text)
 		draft.Step = 4
 		b.saveChaosApplicationDraft(ctx, chatID, draft)
-		return "Шаг 4 из 6. Отправьте ваш числовой Discord ID (17–20 цифр). Он нужен, чтобы после одобрения выдать роль «Игрок DS | Chaos»."
+		return "Шаг 4 из 6. Если у вас есть Discord, напишите имя пользователя, например @geekfreak. Если Discord нет — отправьте «Пропустить»."
 	case 4:
-		value := strings.TrimSpace(text)
-		if !regexp.MustCompile(`^\d{17,20}$`).MatchString(value) {
-			return "Нужен именно числовой Discord ID длиной 17–20 цифр. В Discord включите режим разработчика, нажмите на свой профиль и выберите «Копировать ID»."
+		if strings.EqualFold(strings.TrimSpace(text), "Пропустить") || strings.TrimSpace(text) == "-" {
+			draft.DiscordID = "telegram:" + strconv.FormatInt(chatID, 10)
+			draft.DiscordUsername = ""
+			draft.Step = 5
+			b.saveChaosApplicationDraft(ctx, chatID, draft)
+			return "Шаг 5 из 6. Почему вы хотите присоединиться? Поле необязательное — напишите ответ или отправьте «-», чтобы пропустить."
 		}
-		draft.DiscordID = value
+		value := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(text), "@"))
+		if len([]rune(value)) < 2 || len([]rune(value)) > 32 {
+			return "Укажите обычное имя пользователя Discord — то, которое отображается в вашем профиле. Например: @geekfreak."
+		}
+		if b.discord == nil {
+			return "Сейчас связь с Discord временно недоступна. Попробуйте отправить имя пользователя ещё раз позже."
+		}
+		discordID, err := b.discord.ResolveGuildMemberID(value)
+		if err != nil {
+			return "Не удалось найти такого пользователя на сервере Dimension Science. Сначала войдите на Discord-сервер, проверьте имя пользователя в профиле и отправьте его ещё раз, например @geekfreak."
+		}
+		draft.DiscordID = discordID
+		draft.DiscordUsername = value
 		draft.Step = 5
 		b.saveChaosApplicationDraft(ctx, chatID, draft)
 		return "Шаг 5 из 6. Почему вы хотите присоединиться? Поле необязательное — напишите ответ или отправьте «-», чтобы пропустить."
@@ -543,7 +559,11 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 		if links == "" {
 			links = "не указаны"
 		}
-		return fmt.Sprintf("Проверьте заявку:\n\nИгровой ник: %s\nЧасовой пояс: %s\nСколько играете: %s\nDiscord ID: %s\nПочему хотите присоединиться: %s\nСсылки: %s\n\nНапишите «Отправить», чтобы передать заявку команде, или «Отменить».", draft.GameNick, draft.Timezone, draft.Experience, draft.DiscordID, motivation, links)
+		discordName := "не указан"
+		if draft.DiscordUsername != "" {
+			discordName = "@" + draft.DiscordUsername
+		}
+		return fmt.Sprintf("Проверьте заявку:\n\nИгровой ник: %s\nЧасовой пояс: %s\nСколько играете: %s\nDiscord: %s\nПочему хотите присоединиться: %s\nСсылки: %s\n\nНапишите «Отправить», чтобы передать заявку команде, или «Отменить».", draft.GameNick, draft.Timezone, draft.Experience, discordName, motivation, links)
 	case 7:
 		if !strings.EqualFold(strings.TrimSpace(text), "Отправить") {
 			return "Для подтверждения напишите «Отправить». Чтобы начать заново, напишите «Отменить» и снова нажмите «Подать заявку»."
@@ -555,8 +575,12 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 		if message.From != nil {
 			username = "Telegram: " + telegramDisplayName(*message.From)
 		}
+		discordLabel := username
+		if draft.DiscordUsername != "" {
+			discordLabel = "@" + draft.DiscordUsername + " · " + username
+		}
 		app, err := b.discord.SubmitExternalApplication(ctx, b.store, store.DiscordApplicationInput{
-			DiscordUserID: draft.DiscordID, DiscordUsername: username, ProjectKey: "chaos",
+			DiscordUserID: draft.DiscordID, DiscordUsername: discordLabel, ProjectKey: "chaos",
 			GameNick: draft.GameNick, Timezone: draft.Timezone, Experience: draft.Experience,
 			Motivation: draft.Motivation, Links: draft.Links,
 		})
@@ -569,7 +593,11 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 			return "Не удалось отправить заявку. Ваши ответы сохранены — отправьте последнее сообщение ещё раз через несколько минут."
 		}
 		b.deleteChaosApplicationDraft(ctx, chatID)
-		return fmt.Sprintf("Заявка DSC-%05d отправлена! Команда Dimension Science рассмотрит её в Discord. После одобрения роль «Игрок DS | Chaos» будет выдана автоматически.", app.ApplicationNumber)
+		result := fmt.Sprintf("Заявка DSC-%05d отправлена! Команда Dimension Science рассмотрит её.", app.ApplicationNumber)
+		if draft.DiscordUsername != "" {
+			result += " После одобрения роль «Игрок DS | Chaos» будет выдана автоматически."
+		}
+		return result
 	}
 	b.deleteChaosApplicationDraft(ctx, chatID)
 	return "Заполнение заявки сброшено. Нажмите «Подать заявку», чтобы начать заново."
