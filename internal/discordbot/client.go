@@ -129,7 +129,7 @@ func New(cfg Config, logger *log.Logger) *Client {
 		newsChannelID:       newsChannel,
 		modUpdatesChannelID: modUpdatesChannel,
 		supportChannelID:    strings.TrimSpace(cfg.SupportChannelID),
-		applicationLogID:    firstConfigured(cfg.ApplicationLogID, cfg.SupportChannelID),
+		applicationLogID:    strings.TrimSpace(cfg.ApplicationLogID),
 		moderatorRoleID:     strings.TrimSpace(cfg.ModeratorRoleID),
 		runnerRoleID:        strings.TrimSpace(cfg.RunnerRoleID),
 		chaosPlayerRoleID:   strings.TrimSpace(cfg.ChaosPlayerRoleID),

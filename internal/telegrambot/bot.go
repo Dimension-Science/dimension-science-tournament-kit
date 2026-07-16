@@ -187,6 +187,9 @@ const (
 	buttonStatus      = "Статус заявки DTR"
 	buttonSite        = "Сайт Dimension Science"
 	buttonMyID        = "Мой Telegram ID"
+	buttonSkip        = "— Пропустить"
+	buttonSend        = "Отправить"
+	buttonCancel      = "Отменить"
 )
 
 func Start(ctx context.Context, token string, adminChatID int64, newsChat string, baseURL string, discordURL string, uploadDir string, st *store.Store, discord *discordbot.Client, logger *log.Logger) {
@@ -482,6 +485,9 @@ func (b *Bot) deleteChaosApplicationDraft(ctx context.Context, chatID int64) {
 
 func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramMessage, draft *telegramChaosApplicationDraft, text string) string {
 	chatID := message.Chat.ID
+	if strings.EqualFold(strings.TrimSpace(text), buttonSkip) {
+		text = "-"
+	}
 	length := len([]rune(strings.TrimSpace(text)))
 	switch draft.Step {
 	case 1:
@@ -565,7 +571,7 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 		}
 		return fmt.Sprintf("Проверьте заявку:\n\nИгровой ник: %s\nЧасовой пояс: %s\nСколько играете: %s\nDiscord: %s\nПочему хотите присоединиться: %s\nСсылки: %s\n\nНапишите «Отправить», чтобы передать заявку команде, или «Отменить».", draft.GameNick, draft.Timezone, draft.Experience, discordName, motivation, links)
 	case 7:
-		if !strings.EqualFold(strings.TrimSpace(text), "Отправить") {
+		if !strings.EqualFold(strings.TrimSpace(text), buttonSend) {
 			return "Для подтверждения напишите «Отправить». Чтобы начать заново, напишите «Отменить» и снова нажмите «Подать заявку»."
 		}
 		if b.discord == nil || b.store == nil {
@@ -1648,6 +1654,9 @@ func (b *Bot) sendMessage(ctx context.Context, chatID int64, text string) error 
 }
 
 func (b *Bot) keyboardFor(chatID int64) map[string]any {
+	if draft := b.chaosApplications[chatID]; draft != nil {
+		return chaosApplicationKeyboard(draft.Step)
+	}
 	switch b.menuState[chatID] {
 	case "projects":
 		return projectsKeyboard()
@@ -1660,6 +1669,17 @@ func (b *Bot) keyboardFor(chatID int64) map[string]any {
 		return adminReplyKeyboard()
 	}
 	return replyKeyboard()
+}
+
+func chaosApplicationKeyboard(step int) map[string]any {
+	switch step {
+	case 5, 6:
+		return keyboardRows([][]string{{buttonSkip}, {buttonCancel}})
+	case 7:
+		return keyboardRows([][]string{{buttonSend}, {buttonCancel}})
+	default:
+		return keyboardRows([][]string{{buttonCancel}})
+	}
 }
 
 func (b *Bot) deleteWebhook(ctx context.Context) error {
