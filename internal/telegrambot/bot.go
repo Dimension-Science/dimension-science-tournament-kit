@@ -318,7 +318,7 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 		return "Dimension Tournament Run (DTR)\n\nЗдесь можно проверить подлинность сертификата участника."
 	case strings.ToLower(buttonChaos):
 		b.menuState[chatID] = "chaos"
-		return "Dimension Science: Chaos\n\nНажмите «Подать заявку», чтобы перейти к форме участия в Discord."
+		return "Dimension Science: Chaos\n\nНажмите «Подать заявку», чтобы заполнить форму прямо в Telegram. После отправки команда рассмотрит её и сообщит решение."
 	case strings.ToLower(buttonBack):
 		switch b.menuState[chatID] {
 		case "dtr", "chaos":
