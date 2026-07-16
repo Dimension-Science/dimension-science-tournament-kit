@@ -289,6 +289,18 @@ CREATE TABLE IF NOT EXISTS telegram_support_tickets (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS telegram_chaos_application_drafts (
+  chat_id BIGINT PRIMARY KEY,
+  step INT NOT NULL,
+  game_nick TEXT NOT NULL DEFAULT '',
+  timezone TEXT NOT NULL DEFAULT '',
+  experience TEXT NOT NULL DEFAULT '',
+  discord_id TEXT NOT NULL DEFAULT '',
+  motivation TEXT NOT NULL DEFAULT '',
+  links TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS telegram_news_posts (
   id TEXT PRIMARY KEY,
   telegram_chat_id BIGINT NOT NULL,

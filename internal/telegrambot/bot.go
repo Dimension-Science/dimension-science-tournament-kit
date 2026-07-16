@@ -279,7 +279,7 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 	chatID := message.Chat.ID
 	first := strings.ToLower(strings.Split(command[0], "@")[0])
 	if first == "/start" || first == "/help" {
-		delete(b.chaosApplications, chatID)
+		b.deleteChaosApplicationDraft(ctx, chatID)
 		b.menuState[chatID] = "main"
 		return strings.Join([]string{
 			"Привет! Это официальный бот Dimension Science.",
@@ -296,9 +296,13 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 		}
 	}
 
-	if draft := b.chaosApplications[chatID]; draft != nil {
+	draft := b.chaosApplications[chatID]
+	if draft == nil {
+		draft = b.restoreChaosApplicationDraft(ctx, chatID)
+	}
+	if draft != nil {
 		if strings.EqualFold(text, buttonBack) || strings.EqualFold(text, "Отменить") {
-			delete(b.chaosApplications, chatID)
+			b.deleteChaosApplicationDraft(ctx, chatID)
 			b.menuState[chatID] = "chaos"
 			return "Заполнение заявки отменено."
 		}
@@ -339,7 +343,9 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 	case strings.ToLower(buttonStatus):
 		return "РћС‚РїСЂР°РІСЊ РЅРѕРјРµСЂ Р·Р°СЏРІРєРё РѕРґРЅРёРј СЃРѕРѕР±С‰РµРЅРёРµРј. РќР°РїСЂРёРјРµСЂ: #12"
 	case strings.ToLower(buttonApply):
-		b.chaosApplications[chatID] = &telegramChaosApplicationDraft{Step: 1}
+		draft := &telegramChaosApplicationDraft{Step: 1}
+		b.chaosApplications[chatID] = draft
+		b.saveChaosApplicationDraft(ctx, chatID, draft)
 		b.menuState[chatID] = "chaos"
 		return "Заявка в Dimension Science: Chaos\n\nШаг 1 из 6. Напишите ваш игровой ник в Minecraft (от 2 до 32 символов).\n\nЧтобы прервать заполнение, нажмите «Назад» или напишите «Отменить»."
 	case strings.ToLower(buttonSupport):
@@ -386,7 +392,7 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 
 	number, ok := applicationNumberFromText(text)
 	if !ok {
-		return "РќРµ РІРёР¶Сѓ РЅРѕРјРµСЂ Р·Р°СЏРІРєРё. РќР°Р¶РјРё В«РЎС‚Р°С‚СѓСЃ Р·Р°СЏРІРєРёВ» Рё РѕС‚РїСЂР°РІСЊ РЅРѕРјРµСЂ, РЅР°РїСЂРёРјРµСЂ #12."
+		return "Не удалось определить действие. Выберите нужный раздел с помощью кнопок меню."
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
@@ -428,6 +434,51 @@ func (b *Bot) buildReply(ctx context.Context, message *telegramMessage) string {
 	return strings.Join(lines, "\n")
 }
 
+func (b *Bot) restoreChaosApplicationDraft(ctx context.Context, chatID int64) *telegramChaosApplicationDraft {
+	if b.store == nil {
+		return nil
+	}
+	stored, err := b.store.FindTelegramChaosApplicationDraft(ctx, chatID)
+	if err != nil {
+		b.logger.Printf("telegram restore Chaos application draft: %v", err)
+		return nil
+	}
+	if stored == nil {
+		return nil
+	}
+	draft := &telegramChaosApplicationDraft{
+		Step: stored.Step, GameNick: stored.GameNick, Timezone: stored.Timezone,
+		Experience: stored.Experience, DiscordID: stored.DiscordID,
+		Motivation: stored.Motivation, Links: stored.Links,
+	}
+	b.chaosApplications[chatID] = draft
+	b.menuState[chatID] = "chaos"
+	return draft
+}
+
+func (b *Bot) saveChaosApplicationDraft(ctx context.Context, chatID int64, draft *telegramChaosApplicationDraft) {
+	if b.store == nil || draft == nil {
+		return
+	}
+	err := b.store.SaveTelegramChaosApplicationDraft(ctx, store.TelegramChaosApplicationDraft{
+		ChatID: chatID, Step: draft.Step, GameNick: draft.GameNick, Timezone: draft.Timezone,
+		Experience: draft.Experience, DiscordID: draft.DiscordID,
+		Motivation: draft.Motivation, Links: draft.Links,
+	})
+	if err != nil {
+		b.logger.Printf("telegram save Chaos application draft: %v", err)
+	}
+}
+
+func (b *Bot) deleteChaosApplicationDraft(ctx context.Context, chatID int64) {
+	delete(b.chaosApplications, chatID)
+	if b.store != nil {
+		if err := b.store.DeleteTelegramChaosApplicationDraft(ctx, chatID); err != nil {
+			b.logger.Printf("telegram delete Chaos application draft: %v", err)
+		}
+	}
+}
+
 func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramMessage, draft *telegramChaosApplicationDraft, text string) string {
 	chatID := message.Chat.ID
 	length := len([]rune(strings.TrimSpace(text)))
@@ -438,6 +489,7 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 		}
 		draft.GameNick = strings.TrimSpace(text)
 		draft.Step = 2
+		b.saveChaosApplicationDraft(ctx, chatID, draft)
 		return "Шаг 2 из 6. Укажите ваш часовой пояс, например UTC+5."
 	case 2:
 		if length < 2 || length > 32 {
@@ -445,6 +497,7 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 		}
 		draft.Timezone = strings.TrimSpace(text)
 		draft.Step = 3
+		b.saveChaosApplicationDraft(ctx, chatID, draft)
 		return "Шаг 3 из 6. Сколько лет вы играете в Minecraft? Можно ответить кратко, например: 7 лет."
 	case 3:
 		if length < 1 || length > 50 {
@@ -452,6 +505,7 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 		}
 		draft.Experience = strings.TrimSpace(text)
 		draft.Step = 4
+		b.saveChaosApplicationDraft(ctx, chatID, draft)
 		return "Шаг 4 из 6. Отправьте ваш числовой Discord ID (17–20 цифр). Он нужен, чтобы после одобрения выдать роль «Игрок DS | Chaos»."
 	case 4:
 		value := strings.TrimSpace(text)
@@ -460,6 +514,7 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 		}
 		draft.DiscordID = value
 		draft.Step = 5
+		b.saveChaosApplicationDraft(ctx, chatID, draft)
 		return "Шаг 5 из 6. Почему вы хотите присоединиться? Поле необязательное — напишите ответ или отправьте «-», чтобы пропустить."
 	case 5:
 		if text != "-" {
@@ -469,6 +524,7 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 			draft.Motivation = strings.TrimSpace(text)
 		}
 		draft.Step = 6
+		b.saveChaosApplicationDraft(ctx, chatID, draft)
 		return "Шаг 6 из 6. Пришлите ссылки на Twitch, YouTube или профиль. Поле необязательное — отправьте «-», чтобы пропустить."
 	case 6:
 		if text != "-" {
@@ -478,6 +534,7 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 			draft.Links = strings.TrimSpace(text)
 		}
 		draft.Step = 7
+		b.saveChaosApplicationDraft(ctx, chatID, draft)
 		motivation := draft.Motivation
 		if motivation == "" {
 			motivation = "не указано"
@@ -504,17 +561,17 @@ func (b *Bot) handleChaosApplicationStep(ctx context.Context, message *telegramM
 			Motivation: draft.Motivation, Links: draft.Links,
 		})
 		if errors.Is(err, store.ErrActiveDiscordApplication) {
-			delete(b.chaosApplications, chatID)
+			b.deleteChaosApplicationDraft(ctx, chatID)
 			return "У вас уже есть активная заявка Chaos. Дождитесь решения команды по ней."
 		}
 		if err != nil {
 			b.logger.Printf("telegram Chaos application: %v", err)
 			return "Не удалось отправить заявку. Ваши ответы сохранены — отправьте последнее сообщение ещё раз через несколько минут."
 		}
-		delete(b.chaosApplications, chatID)
+		b.deleteChaosApplicationDraft(ctx, chatID)
 		return fmt.Sprintf("Заявка DSC-%05d отправлена! Команда Dimension Science рассмотрит её в Discord. После одобрения роль «Игрок DS | Chaos» будет выдана автоматически.", app.ApplicationNumber)
 	}
-	delete(b.chaosApplications, chatID)
+	b.deleteChaosApplicationDraft(ctx, chatID)
 	return "Заполнение заявки сброшено. Нажмите «Подать заявку», чтобы начать заново."
 }
 
