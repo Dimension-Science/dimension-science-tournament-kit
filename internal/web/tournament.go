@@ -94,30 +94,30 @@ func buildTournamentStatusView(tournament *store.Tournament) tournamentStatusVie
 		return tournamentStatusView{
 			Available:        false,
 			RegistrationOpen: true,
-			PhaseLabel:       "РўСѓСЂРЅРёСЂ РЅРµ Р·Р°РїСѓС‰РµРЅ",
-			StateLabel:       "РЅРµС‚ Р°РєС‚РёРІРЅРѕРіРѕ СЂР°СЃРїРёСЃР°РЅРёСЏ",
+			PhaseLabel:       "Турнир не запущен",
+			StateLabel:       "нет активного расписания",
 			PlayoffSlots:     defaultPlayoffSlots,
 			CountdownValue:   "-",
-			CountdownLabel:   "РґРЅРµР№",
-			CountdownDetail:  "РљРІР°Р»РёС„РёРєР°С†РёСЏ РЅР°С‡РЅРµС‚СЃСЏ РїРѕСЃР»Рµ СЃС‚Р°СЂС‚Р° С‚СѓСЂРЅРёСЂР°.",
-			PrimaryLine:      "РўСѓСЂРЅРёСЂ РїРѕРєР° РЅРµ Р·Р°РїСѓС‰РµРЅ.",
-			SecondaryLine:    "Р¤РѕСЂРјР°С‚: РєРІР°Р»РёС„РёРєР°С†РёСЏ, Р·Р°С‚РµРј РїР»РµР№-РѕС„С„ Рё С„РёРЅР°Р».",
+			CountdownLabel:   "дней",
+			CountdownDetail:  "Квалификация начнется после старта турнира.",
+			PrimaryLine:      "Турнир пока не запущен.",
+			SecondaryLine:    "Формат: квалификация, затем плей-офф и финал.",
 		}
 	}
 	phaseLabel := phaseLabel(tournament.Phase)
 	registrationOpen := tournament.State != "running" || tournament.Phase == "scheduled" || tournament.Phase == "finished"
-	primary := "РљРІР°Р»С‹ РґРѕ " + formatDateTime(tournament.QualificationEndsAt)
+	primary := "Квалы до " + formatDateTime(tournament.QualificationEndsAt)
 	switch tournament.Phase {
 	case "qualification":
-		primary = "РљРІР°Р»РёС„РёРєР°С†РёСЏ РґРѕ " + formatDateTime(tournament.QualificationEndsAt)
+		primary = "Квалификация до " + formatDateTime(tournament.QualificationEndsAt)
 	case "playoff":
-		primary = "РџР»РµР№-РѕС„С„ РґРѕ " + formatDateTime(tournament.PlayoffEndsAt)
+		primary = "Плей-офф до " + formatDateTime(tournament.PlayoffEndsAt)
 	case "final":
-		primary = "Р¤РёРЅР°Р» РґРѕ " + formatDateTime(tournament.EndsAt)
+		primary = "Финал до " + formatDateTime(tournament.EndsAt)
 	case "scheduled":
-		primary = "РЎС‚Р°СЂС‚ " + formatDateTime(tournament.StartsAt)
+		primary = "Старт " + formatDateTime(tournament.StartsAt)
 	case "finished":
-		primary = "РўСѓСЂРЅРёСЂ Р·Р°РІРµСЂС€РµРЅ " + formatDateTime(tournament.EndsAt)
+		primary = "Турнир завершен " + formatDateTime(tournament.EndsAt)
 	}
 	bracketOpen := !now.Before(tournament.QualificationEndsAt)
 	countdownValue, countdownLabel, countdownDetail := qualificationCountdown(tournament, now)
@@ -140,21 +140,21 @@ func buildTournamentStatusView(tournament *store.Tournament) tournamentStatusVie
 		CountdownDetail:     countdownDetail,
 		ShowCountdown:       showCountdown,
 		PrimaryLine:         primary,
-		SecondaryLine:       "Р’ РїР»РµР№-РѕС„С„ РїСЂРѕС…РѕРґРёС‚ С‚РѕРї-" + intString(tournament.PlayoffSlots) + ". Р¤РѕСЂРјР°С‚: РєРІР°Р»С‹, РїР»РµР№-РѕС„С„, С„РёРЅР°Р».",
+		SecondaryLine:       "В плей-офф проходит топ-" + intString(tournament.PlayoffSlots) + ". Формат: квалы, плей-офф, финал.",
 	}
 }
 
 func qualificationCountdown(tournament *store.Tournament, now time.Time) (string, string, string) {
 	if tournament == nil {
-		return "-", "РґРЅРµР№", "РљРІР°Р»РёС„РёРєР°С†РёСЏ РЅР°С‡РЅРµС‚СЃСЏ РїРѕСЃР»Рµ СЃС‚Р°СЂС‚Р° С‚СѓСЂРЅРёСЂР°."
+		return "-", "дней", "Квалификация начнется после старта турнира."
 	}
 	if !now.Before(tournament.QualificationEndsAt) {
-		return "0", "РґРЅРµР№", "РљРІР°Р»РёС„РёРєР°С†РёСЏ Р·Р°РІРµСЂС€РµРЅР°."
+		return "0", "дней", "Квалификация завершена."
 	}
 	days := ceilDays(tournament.QualificationEndsAt.Sub(now))
-	detail := "Р”Рѕ РєРѕРЅС†Р° РєРІР°Р»РёС„РёРєР°С†РёРё."
+	detail := "До конца квалификации."
 	if days == 0 {
-		detail = "Р”Рѕ РєРѕРЅС†Р° РєРІР°Р»РёС„РёРєР°С†РёРё РјРµРЅСЊС€Рµ СЃСѓС‚РѕРє."
+		detail = "До конца квалификации меньше суток."
 	}
 	return intString(days), dayLabel(days), detail
 }
@@ -170,15 +170,15 @@ func ceilDays(duration time.Duration) int {
 func dayLabel(days int) string {
 	remainder := days % 100
 	if remainder >= 11 && remainder <= 14 {
-		return "РґРЅРµР№"
+		return "дней"
 	}
 	switch days % 10 {
 	case 1:
-		return "РґРµРЅСЊ"
+		return "день"
 	case 2, 3, 4:
-		return "РґРЅСЏ"
+		return "дня"
 	default:
-		return "РґРЅРµР№"
+		return "дней"
 	}
 }
 
@@ -250,7 +250,7 @@ func participantID(participant *store.Participant) string {
 
 func participantName(participant *store.Participant) string {
 	if participant == nil {
-		return "РћР¶РёРґР°РµС‚СЃСЏ РїРѕР±РµРґРёС‚РµР»СЊ"
+		return "Ожидается победитель"
 	}
 	return firstNonEmpty(participant.TwitchDisplayName, participant.TwitchLogin)
 }
@@ -272,15 +272,15 @@ func nullableDuration(value *int) any {
 func phaseLabel(phase string) string {
 	switch phase {
 	case "qualification":
-		return "РљРІР°Р»РёС„РёРєР°С†РёСЏ"
+		return "Квалификация"
 	case "playoff":
-		return "РџР»РµР№-РѕС„С„"
+		return "Плей-офф"
 	case "final":
-		return "Р¤РёРЅР°Р»"
+		return "Финал"
 	case "scheduled":
-		return "Р—Р°РїР»Р°РЅРёСЂРѕРІР°РЅ"
+		return "Запланирован"
 	case "finished":
-		return "Р—Р°РІРµСЂС€РµРЅ"
+		return "Завершен"
 	default:
 		return phase
 	}
@@ -289,13 +289,13 @@ func phaseLabel(phase string) string {
 func roundLabel(round string) string {
 	switch round {
 	case "quarterfinal":
-		return "1/4 С„РёРЅР°Р»Р°"
+		return "1/4 финала"
 	case "semifinal":
-		return "РџРѕР»СѓС„РёРЅР°Р»"
+		return "Полуфинал"
 	case "third_place":
-		return "РњР°С‚С‡ Р·Р° 3 РјРµСЃС‚Рѕ"
+		return "Матч за 3 место"
 	case "final":
-		return "Р¤РёРЅР°Р»"
+		return "Финал"
 	default:
 		return round
 	}
@@ -304,11 +304,11 @@ func roundLabel(round string) string {
 func matchStatusLabel(status string) string {
 	switch status {
 	case "running":
-		return "РёРґРµС‚"
+		return "идет"
 	case "finished":
-		return "Р·Р°РІРµСЂС€РµРЅ"
+		return "завершен"
 	default:
-		return "Р·Р°РїР»Р°РЅРёСЂРѕРІР°РЅ"
+		return "запланирован"
 	}
 }
 
